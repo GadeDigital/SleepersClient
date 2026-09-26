@@ -90,18 +90,36 @@ export class WorldRenderer {
 	}
 
 	#frame = (): void => {
-		// Until the camera follows a character, centre the room.
-		const room = this.#game.room;
-		const w = (room?.width ?? 0) * TILE_SIZE * this.#zoom;
-		const h = (room?.height ?? 0) * TILE_SIZE * this.#zoom;
+		const tickNow = this.#game.clock.now(performance.now());
 		this.#world.scale.set(this.#zoom);
-		this.#world.position.set(
-			Math.round((this.#app.screen.width - w) / 2),
-			Math.round((this.#app.screen.height - h) / 2)
-		);
-		this.#drawCharacters(this.#game.clock.now(performance.now()));
+		this.#followCamera(tickNow);
+		this.#drawCharacters(tickNow);
 		this.#drawQueued();
 	};
+
+	/**
+	 * Centres the view on your own character, gliding with it. Before the
+	 * snapshot names one, the room is centred instead. The world's offset is
+	 * always a whole number of physical pixels.
+	 */
+	#followCamera(tickNow: number): void {
+		const me = this.#game.me;
+		let centreX: number;
+		let centreY: number;
+		if (me) {
+			const [x, y] = glidePosition(me, tickNow);
+			centreX = this.#snap(x * TILE_SIZE) + TILE_SIZE / 2;
+			centreY = this.#snap(y * TILE_SIZE) + TILE_SIZE / 2;
+		} else {
+			const room = this.#game.room;
+			centreX = ((room?.width ?? 0) * TILE_SIZE) / 2;
+			centreY = ((room?.height ?? 0) * TILE_SIZE) / 2;
+		}
+		this.#world.position.set(
+			Math.round(this.#app.screen.width / 2 - centreX * this.#zoom),
+			Math.round(this.#app.screen.height / 2 - centreY * this.#zoom)
+		);
+	}
 
 	/** Shows the move you sent while stepping, which the server holds as queued. */
 	#drawQueued(): void {
