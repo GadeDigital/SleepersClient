@@ -132,16 +132,22 @@
 		color: #f2f2f2;
 	}
 
-	/* Spacing comes from margins, not markup whitespace, so formatting the
-	   markup can never run "Ana" and "yells" together. */
-	.who::after {
+	/* Spacing comes from the flex gap and margins, not markup whitespace
+	   (which flex layout ignores), so formatting the markup can never run
+	   "Ana" and "yells" together or put a space before the colon. */
+	.who {
+		display: inline-flex;
+		gap: 0.3em;
+		align-items: baseline;
+	}
+
+	.who > :last-child::after {
 		content: ':';
 	}
 
 	.how {
 		font-size: 0.85em;
 		opacity: 0.6;
-		margin-left: 0.3em;
 	}
 
 	.text {
