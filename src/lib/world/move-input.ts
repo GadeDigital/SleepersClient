@@ -26,6 +26,13 @@ const KEYS: Record<string, [number, number]> = {
 const LEAD_TICKS = 2;
 
 /**
+ * While a key is held and the character stands still, as after a step was
+ * refused, ask again this often: one step's duration (ADR 023). Someone
+ * crossing your path then only holds you up until they have passed.
+ */
+const RETRY_TICKS = 5;
+
+/**
  * Turns held keys into move commands. It only asks: the server decides
  * whether each step happens (ADR 002).
  */
@@ -35,6 +42,10 @@ export class MoveInput {
 	readonly #move: (dir: Direction) => void;
 	/** The step a follow-up was already sent for, by its start tick. */
 	#followedStep = -1;
+	/** The latest estimated tick seen by update. */
+	#tick = 0;
+	/** When the last command was sent, in estimated ticks. */
+	#sentTick = -Infinity;
 
 	constructor(game: GameState, move: (dir: Direction) => void) {
 		this.#game = game;
@@ -76,14 +87,20 @@ export class MoveInput {
 
 	/** Called every frame: keeps walking while a key is held. */
 	update(tickNow: number): void {
+		this.#tick = tickNow;
 		const dir = this.direction;
+		if (dir === null || this.#game.pendingMove !== null) return;
 		const step = this.#game.me?.step;
-		if (dir === null || !step || this.#game.pendingMove !== null) return;
+		if (!step) {
+			if (tickNow - this.#sentTick >= RETRY_TICKS) this.#send(dir);
+			return;
+		}
 		if (step.startTick === this.#followedStep) return;
 		if (step.arriveTick - tickNow <= LEAD_TICKS) this.#send(dir);
 	}
 
 	#send(dir: Direction): void {
+		this.#sentTick = this.#tick;
 		const step = this.#game.me?.step;
 		// A command sent during a step is its follow-up; don't send another.
 		if (step) this.#followedStep = step.startTick;

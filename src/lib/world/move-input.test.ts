@@ -79,12 +79,19 @@ describe('MoveInput', () => {
 		expect(sent).toHaveLength(1);
 	});
 
-	it('does not resend while idle, as after walking into a wall', () => {
+	it('retries once per step duration while held and refused', () => {
 		const { game, input, sent } = setup();
-		input.keydown('KeyA', false);
-		game.pendingMove = null; // rejected: a wall is in the way
 		input.update(20);
+		input.keydown('KeyA', false); // sent at tick 20
+		game.pendingMove = null; // refused: someone is in the way
 		input.update(21);
+		input.update(24);
 		expect(sent).toHaveLength(1);
+		input.update(25);
+		expect(sent).toHaveLength(2);
+		game.pendingMove = null;
+		input.keyup('KeyA');
+		input.update(40);
+		expect(sent).toHaveLength(2);
 	});
 });
