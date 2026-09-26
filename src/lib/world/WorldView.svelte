@@ -85,11 +85,6 @@
 				renderer?.resize(size.width, size.height, size.dpr);
 			});
 
-			// A snapshot replaces the room whole, so this runs once per snapshot.
-			$effect(() => {
-				renderer?.setRoom(g.room);
-			});
-
 			return () => {
 				offKeydown();
 				offKeyup();

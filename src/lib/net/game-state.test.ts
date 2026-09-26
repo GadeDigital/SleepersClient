@@ -1,7 +1,7 @@
 import { create, type MessageInitShape } from '@bufbuild/protobuf';
 import { describe, expect, it } from 'vitest';
 import { ServerMessageSchema } from '$lib/proto/glyph/v1/messages_pb';
-import { CharacterState, Direction, SpeechMode, Tile } from '$lib/proto/glyph/v1/world_pb';
+import { CharacterState, Direction, SpeechMode } from '$lib/proto/glyph/v1/world_pb';
 import { GameState, LOG_LIMIT } from './game-state.svelte';
 
 function msg(init: MessageInitShape<typeof ServerMessageSchema>) {
@@ -19,7 +19,7 @@ function joined(): GameState {
 				value: {
 					yourCharacterId: 1,
 					tick: 30n,
-					room: { width: 2, height: 1, tiles: [Tile.FLOOR, Tile.WALL] },
+					map: { ref: { address: 'g/test' }, width: 64, height: 64, wrapsX: true, chunkSize: 32 },
 					characters: [
 						{ id: 1, name: 'Ana', position: { x: 1, y: 1 }, state: AWAKE },
 						{ id: 2, name: 'Ben', position: { x: 2, y: 1 }, state: AWAKE }
@@ -33,9 +33,9 @@ function joined(): GameState {
 }
 
 describe('GameState', () => {
-	it('takes the room, characters and tick from the snapshot', () => {
+	it('takes the map, characters and tick from the snapshot', () => {
 		const game = joined();
-		expect(game.room?.width).toBe(2);
+		expect(game.map?.width).toBe(64);
 		expect(game.me?.name).toBe('Ana');
 		expect(Object.keys(game.characters)).toHaveLength(2);
 		expect(game.clock.now(0)).toBe(30);

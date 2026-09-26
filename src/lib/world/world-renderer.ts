@@ -1,6 +1,5 @@
 import { Container, Graphics, TextureStyle, type Application } from 'pixi.js';
 import type { GameState } from '$lib/net/game-state.svelte';
-import { Tile, type Room } from '$lib/proto/glyph/v1/world_pb';
 import { CharacterSprite } from './character-sprite';
 import { glidePosition } from './glide';
 import { queuedTarget } from './move-input';
@@ -9,10 +8,6 @@ import { TILE_SIZE, zoomFor } from './scale';
 /** Name label size in CSS pixels. */
 const LABEL_CSS_SIZE = 12;
 
-const FLOOR = 0x2a2d3a;
-const FLOOR_EDGE = 0x24262f;
-const WALL = 0x6b6f80;
-const UNKNOWN = 0xff00ff;
 const QUEUED = 0xf2f2f2;
 
 // Pixel art: sample textures nearest-neighbour, never smoothed.
@@ -28,7 +23,6 @@ export class WorldRenderer {
 	readonly #game: GameState;
 	/** Everything in world coordinates, in art pixels; the camera moves and scales it. */
 	readonly #world = new Container();
-	readonly #tiles = new Graphics();
 	/** Faint outline of the tile your queued step heads for. */
 	readonly #queued = new Graphics();
 	readonly #bodies = new Container({ sortableChildren: true });
@@ -48,7 +42,7 @@ export class WorldRenderer {
 			.rect(0, 0, TILE_SIZE, TILE_SIZE)
 			.stroke({ color: QUEUED, width: 1, alignment: 1, alpha: 0.35 });
 		this.#queued.visible = false;
-		this.#world.addChild(this.#tiles, this.#queued, this.#bodies);
+		this.#world.addChild(this.#queued, this.#bodies);
 		app.stage.addChild(this.#world, this.#labels);
 		app.ticker.add(this.#frame);
 	}
@@ -62,26 +56,6 @@ export class WorldRenderer {
 		this.#app.renderer.resize(width, height);
 		this.#zoom = zoomFor(devicePixelRatio);
 		this.#fontSize = Math.round(LABEL_CSS_SIZE * devicePixelRatio);
-	}
-
-	/** Redraws the tile layer. Called when the snapshot brings a new room. */
-	setRoom(room: Room | null): void {
-		const g = this.#tiles.clear();
-		if (!room) return;
-		for (let y = 0; y < room.height; y++) {
-			for (let x = 0; x < room.width; x++) {
-				const tile = room.tiles[y * room.width + x];
-				const px = x * TILE_SIZE;
-				const py = y * TILE_SIZE;
-				if (tile === Tile.FLOOR) {
-					// A one-pixel darker edge makes single tiles visible.
-					g.rect(px, py, TILE_SIZE, TILE_SIZE).fill(FLOOR_EDGE);
-					g.rect(px + 1, py + 1, TILE_SIZE - 1, TILE_SIZE - 1).fill(FLOOR);
-				} else {
-					g.rect(px, py, TILE_SIZE, TILE_SIZE).fill(tile === Tile.WALL ? WALL : UNKNOWN);
-				}
-			}
-		}
 	}
 
 	destroy(): void {
@@ -114,7 +88,7 @@ export class WorldRenderer {
 
 	/**
 	 * Centres the view on your own character, gliding with it. Before the
-	 * snapshot names one, the room is centred instead. The world's offset is
+	 * snapshot names one, the map's centre is shown instead. The world's offset is
 	 * always a whole number of physical pixels.
 	 */
 	#followCamera(tickNow: number): void {
@@ -126,9 +100,9 @@ export class WorldRenderer {
 			centreX = this.#snap(x * TILE_SIZE) + TILE_SIZE / 2;
 			centreY = this.#snap(y * TILE_SIZE) + TILE_SIZE / 2;
 		} else {
-			const room = this.#game.room;
-			centreX = ((room?.width ?? 0) * TILE_SIZE) / 2;
-			centreY = ((room?.height ?? 0) * TILE_SIZE) / 2;
+			const map = this.#game.map;
+			centreX = ((map?.width ?? 0) * TILE_SIZE) / 2;
+			centreY = ((map?.height ?? 0) * TILE_SIZE) / 2;
 		}
 		this.#world.position.set(
 			Math.round(this.#app.screen.width / 2 - centreX * this.#zoom),

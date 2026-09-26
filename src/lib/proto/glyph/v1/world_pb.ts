@@ -10,10 +10,118 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file glyph/v1/world.proto.
  */
 export const file_glyph_v1_world: GenFile = /*@__PURE__*/
-  fileDesc("ChRnbHlwaC92MS93b3JsZC5wcm90bxIIZ2x5cGgudjEiIAoIUG9zaXRpb24SCQoBeBgBIAEoBRIJCgF5GAIgASgFIkQKBFJvb20SDQoFd2lkdGgYASABKA0SDgoGaGVpZ2h0GAIgASgNEh0KBXRpbGVzGAMgAygOMg4uZ2x5cGgudjEuVGlsZSJ0CglDaGFyYWN0ZXISCgoCaWQYASABKA0SDAoEbmFtZRgCIAEoCRIkCghwb3NpdGlvbhgDIAEoCzISLmdseXBoLnYxLlBvc2l0aW9uEicKBXN0YXRlGAQgASgOMhguZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGUq4AEKCURpcmVjdGlvbhIZChVESVJFQ1RJT05fVU5TUEVDSUZJRUQQABITCg9ESVJFQ1RJT05fTk9SVEgQARIYChRESVJFQ1RJT05fTk9SVEhfRUFTVBACEhIKDkRJUkVDVElPTl9FQVNUEAMSGAoURElSRUNUSU9OX1NPVVRIX0VBU1QQBBITCg9ESVJFQ1RJT05fU09VVEgQBRIYChRESVJFQ1RJT05fU09VVEhfV0VTVBAGEhIKDkRJUkVDVElPTl9XRVNUEAcSGAoURElSRUNUSU9OX05PUlRIX1dFU1QQCCpuCgpTcGVlY2hNb2RlEhsKF1NQRUVDSF9NT0RFX1VOU1BFQ0lGSUVEEAASFwoTU1BFRUNIX01PREVfV0hJU1BFUhABEhQKEFNQRUVDSF9NT0RFX1RBTEsQAhIUChBTUEVFQ0hfTU9ERV9ZRUxMEAMqOwoEVGlsZRIUChBUSUxFX1VOU1BFQ0lGSUVEEAASDgoKVElMRV9GTE9PUhABEg0KCVRJTEVfV0FMTBACKm0KDkNoYXJhY3RlclN0YXRlEh8KG0NIQVJBQ1RFUl9TVEFURV9VTlNQRUNJRklFRBAAEhkKFUNIQVJBQ1RFUl9TVEFURV9BV0FLRRABEh8KG0NIQVJBQ1RFUl9TVEFURV9VTkNPTlNDSU9VUxACQitaKWdseXBoL3NlcnZlci9pbnRlcm5hbC9wYi9nbHlwaC92MTtnbHlwaHYxYgZwcm90bzM");
+  fileDesc("ChRnbHlwaC92MS93b3JsZC5wcm90bxIIZ2x5cGgudjEiGQoGTWFwUmVmEg8KB2FkZHJlc3MYASABKAkibAoHTWFwSW5mbxIdCgNyZWYYASABKAsyEC5nbHlwaC52MS5NYXBSZWYSDQoFd2lkdGgYAiABKA0SDgoGaGVpZ2h0GAMgASgNEg8KB3dyYXBzX3gYBCABKAgSEgoKY2h1bmtfc2l6ZRgFIAEoDSJECghUaWxlVHlwZRIKCgJpZBgBIAEoDRIMCgRuYW1lGAIgASgJEg4KBmJsb2NrcxgDIAEoCBIOCgZjb2xvdXIYBCABKA0iIAoIUG9zaXRpb24SCQoBeBgBIAEoBRIJCgF5GAIgASgFIpMBCglDaGFyYWN0ZXISCgoCaWQYASABKA0SDAoEbmFtZRgCIAEoCRIkCghwb3NpdGlvbhgDIAEoCzISLmdseXBoLnYxLlBvc2l0aW9uEicKBXN0YXRlGAQgASgOMhguZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGUSHQoDbWFwGAUgASgLMhAuZ2x5cGgudjEuTWFwUmVmKuABCglEaXJlY3Rpb24SGQoVRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASEwoPRElSRUNUSU9OX05PUlRIEAESGAoURElSRUNUSU9OX05PUlRIX0VBU1QQAhISCg5ESVJFQ1RJT05fRUFTVBADEhgKFERJUkVDVElPTl9TT1VUSF9FQVNUEAQSEwoPRElSRUNUSU9OX1NPVVRIEAUSGAoURElSRUNUSU9OX1NPVVRIX1dFU1QQBhISCg5ESVJFQ1RJT05fV0VTVBAHEhgKFERJUkVDVElPTl9OT1JUSF9XRVNUEAgqbgoKU3BlZWNoTW9kZRIbChdTUEVFQ0hfTU9ERV9VTlNQRUNJRklFRBAAEhcKE1NQRUVDSF9NT0RFX1dISVNQRVIQARIUChBTUEVFQ0hfTU9ERV9UQUxLEAISFAoQU1BFRUNIX01PREVfWUVMTBADKm0KDkNoYXJhY3RlclN0YXRlEh8KG0NIQVJBQ1RFUl9TVEFURV9VTlNQRUNJRklFRBAAEhkKFUNIQVJBQ1RFUl9TVEFURV9BV0FLRRABEh8KG0NIQVJBQ1RFUl9TVEFURV9VTkNPTlNDSU9VUxACQitaKWdseXBoL3NlcnZlci9pbnRlcm5hbC9wYi9nbHlwaC92MTtnbHlwaHYxYgZwcm90bzM");
 
 /**
- * Position is a tile coordinate. One tile is about 1 m.
+ * MapRef names a map (ADR 032). A planet's surface is the map named by the
+ * planet's address, such as "g/s0,0/y0/p0"; ships and stations will later
+ * have interior maps of their own. No code may assume one global grid.
+ *
+ * @generated from message glyph.v1.MapRef
+ */
+export type MapRef = Message<"glyph.v1.MapRef"> & {
+  /**
+   * @generated from field: string address = 1;
+   */
+  address: string;
+};
+
+/**
+ * Describes the message glyph.v1.MapRef.
+ * Use `create(MapRefSchema)` to create a new message.
+ */
+export const MapRefSchema: GenMessage<MapRef> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_world, 0);
+
+/**
+ * MapInfo describes a map's shape. A planet's surface wraps east to west;
+ * its poles are the north and south edges (ADR 031).
+ *
+ * @generated from message glyph.v1.MapInfo
+ */
+export type MapInfo = Message<"glyph.v1.MapInfo"> & {
+  /**
+   * @generated from field: glyph.v1.MapRef ref = 1;
+   */
+  ref?: MapRef | undefined;
+
+  /**
+   * in tiles
+   *
+   * @generated from field: uint32 width = 2;
+   */
+  width: number;
+
+  /**
+   * in tiles
+   *
+   * @generated from field: uint32 height = 3;
+   */
+  height: number;
+
+  /**
+   * x runs 0 to width-1, then back to 0
+   *
+   * @generated from field: bool wraps_x = 4;
+   */
+  wrapsX: boolean;
+
+  /**
+   * chunks are chunk_size by chunk_size tiles
+   *
+   * @generated from field: uint32 chunk_size = 5;
+   */
+  chunkSize: number;
+};
+
+/**
+ * Describes the message glyph.v1.MapInfo.
+ * Use `create(MapInfoSchema)` to create a new message.
+ */
+export const MapInfoSchema: GenMessage<MapInfo> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_world, 1);
+
+/**
+ * TileType is one entry of the data-defined tile catalogue (ADR 035). Tiles
+ * in chunks are these ids, so new tile types need no schema change.
+ *
+ * @generated from message glyph.v1.TileType
+ */
+export type TileType = Message<"glyph.v1.TileType"> & {
+  /**
+   * @generated from field: uint32 id = 1;
+   */
+  id: number;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * stops movement
+   *
+   * @generated from field: bool blocks = 3;
+   */
+  blocks: boolean;
+
+  /**
+   * placeholder colour, 0xRRGGBB
+   *
+   * @generated from field: uint32 colour = 4;
+   */
+  colour: number;
+};
+
+/**
+ * Describes the message glyph.v1.TileType.
+ * Use `create(TileTypeSchema)` to create a new message.
+ */
+export const TileTypeSchema: GenMessage<TileType> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_world, 2);
+
+/**
+ * Position is a tile coordinate on a map. One tile is about 1 m.
  * x grows east, y grows south.
  *
  * @generated from message glyph.v1.Position
@@ -35,38 +143,7 @@ export type Position = Message<"glyph.v1.Position"> & {
  * Use `create(PositionSchema)` to create a new message.
  */
 export const PositionSchema: GenMessage<Position> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_world, 0);
-
-/**
- * Room is a rectangular grid of tiles.
- *
- * @generated from message glyph.v1.Room
- */
-export type Room = Message<"glyph.v1.Room"> & {
-  /**
-   * @generated from field: uint32 width = 1;
-   */
-  width: number;
-
-  /**
-   * @generated from field: uint32 height = 2;
-   */
-  height: number;
-
-  /**
-   * Row-major: the tile at (x, y) is tiles[y * width + x].
-   *
-   * @generated from field: repeated glyph.v1.Tile tiles = 3;
-   */
-  tiles: Tile[];
-};
-
-/**
- * Describes the message glyph.v1.Room.
- * Use `create(RoomSchema)` to create a new message.
- */
-export const RoomSchema: GenMessage<Room> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_world, 1);
+  messageDesc(file_glyph_v1_world, 3);
 
 /**
  * @generated from message glyph.v1.Character
@@ -91,6 +168,13 @@ export type Character = Message<"glyph.v1.Character"> & {
    * @generated from field: glyph.v1.CharacterState state = 4;
    */
   state: CharacterState;
+
+  /**
+   * The map the character is on; position is on that map (ADR 032).
+   *
+   * @generated from field: glyph.v1.MapRef map = 5;
+   */
+  map?: MapRef | undefined;
 };
 
 /**
@@ -98,7 +182,7 @@ export type Character = Message<"glyph.v1.Character"> & {
  * Use `create(CharacterSchema)` to create a new message.
  */
 export const CharacterSchema: GenMessage<Character> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_world, 2);
+  messageDesc(file_glyph_v1_world, 4);
 
 /**
  * Direction of a step (ADR 023: 8 ways).
@@ -192,32 +276,6 @@ export const SpeechModeSchema: GenEnum<SpeechMode> = /*@__PURE__*/
   enumDesc(file_glyph_v1_world, 1);
 
 /**
- * @generated from enum glyph.v1.Tile
- */
-export enum Tile {
-  /**
-   * @generated from enum value: TILE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: TILE_FLOOR = 1;
-   */
-  FLOOR = 1,
-
-  /**
-   * @generated from enum value: TILE_WALL = 2;
-   */
-  WALL = 2,
-}
-
-/**
- * Describes the enum glyph.v1.Tile.
- */
-export const TileSchema: GenEnum<Tile> = /*@__PURE__*/
-  enumDesc(file_glyph_v1_world, 2);
-
-/**
  * @generated from enum glyph.v1.CharacterState
  */
 export enum CharacterState {
@@ -243,5 +301,5 @@ export enum CharacterState {
  * Describes the enum glyph.v1.CharacterState.
  */
 export const CharacterStateSchema: GenEnum<CharacterState> = /*@__PURE__*/
-  enumDesc(file_glyph_v1_world, 3);
+  enumDesc(file_glyph_v1_world, 2);
 

@@ -6,7 +6,7 @@ import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Ping, Pong } from "./ping_pb";
 import { file_glyph_v1_ping } from "./ping_pb";
-import type { Character, CharacterState, Direction, Position, Room, SpeechMode } from "./world_pb";
+import type { Character, CharacterState, Direction, MapInfo, MapRef, Position, SpeechMode, TileType } from "./world_pb";
 import { file_glyph_v1_world } from "./world_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file glyph/v1/messages.proto.
  */
 export const file_glyph_v1_messages: GenFile = /*@__PURE__*/
-  fileDesc("ChdnbHlwaC92MS9tZXNzYWdlcy5wcm90bxIIZ2x5cGgudjEimAEKDUNsaWVudE1lc3NhZ2USHgoEcGluZxgBIAEoCzIOLmdseXBoLnYxLlBpbmdIABIeCgRqb2luGAIgASgLMg4uZ2x5cGgudjEuSm9pbkgAEh4KBG1vdmUYAyABKAsyDi5nbHlwaC52MS5Nb3ZlSAASHAoDc2F5GAQgASgLMg0uZ2x5cGgudjEuU2F5SABCCQoHbWVzc2FnZSKFBAoNU2VydmVyTWVzc2FnZRIeCgRwb25nGAEgASgLMg4uZ2x5cGgudjEuUG9uZ0gAEjEKDndvcmxkX3NuYXBzaG90GAIgASgLMhcuZ2x5cGgudjEuV29ybGRTbmFwc2hvdEgAEjkKEmNoYXJhY3Rlcl9hcHBlYXJlZBgDIAEoCzIbLmdseXBoLnYxLkNoYXJhY3RlckFwcGVhcmVkSAASLQoMc3RlcF9zdGFydGVkGAQgASgLMhUuZ2x5cGgudjEuU3RlcFN0YXJ0ZWRIABIzCg9jaGFyYWN0ZXJfbW92ZWQYBSABKAsyGC5nbHlwaC52MS5DaGFyYWN0ZXJNb3ZlZEgAEkIKF2NoYXJhY3Rlcl9zdGF0ZV9jaGFuZ2VkGAYgASgLMh8uZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGVDaGFuZ2VkSAASMQoOY2hhcmFjdGVyX2xlZnQYByABKAsyFy5nbHlwaC52MS5DaGFyYWN0ZXJMZWZ0SAASNQoQY29tbWFuZF9yZWplY3RlZBgIIAEoCzIZLmdseXBoLnYxLkNvbW1hbmRSZWplY3RlZEgAEicKCXRpY2tfc3luYxgJIAEoCzISLmdseXBoLnYxLlRpY2tTeW5jSAASIAoFaGVhcmQYCiABKAsyDy5nbHlwaC52MS5IZWFyZEgAQgkKB21lc3NhZ2UiFAoESm9pbhIMCgRuYW1lGAEgASgJIi4KBE1vdmUSJgoJZGlyZWN0aW9uGAEgASgOMhMuZ2x5cGgudjEuRGlyZWN0aW9uIjcKA1NheRIiCgRtb2RlGAEgASgOMhQuZ2x5cGgudjEuU3BlZWNoTW9kZRIMCgR0ZXh0GAIgASgJIn8KDVdvcmxkU25hcHNob3QSGQoReW91cl9jaGFyYWN0ZXJfaWQYASABKA0SDAoEdGljaxgCIAEoBBIcCgRyb29tGAMgASgLMg4uZ2x5cGgudjEuUm9vbRInCgpjaGFyYWN0ZXJzGAQgAygLMhMuZ2x5cGgudjEuQ2hhcmFjdGVyIjsKEUNoYXJhY3RlckFwcGVhcmVkEiYKCWNoYXJhY3RlchgBIAEoCzITLmdseXBoLnYxLkNoYXJhY3RlciKOAQoLU3RlcFN0YXJ0ZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEiAKBGZyb20YAiABKAsyEi5nbHlwaC52MS5Qb3NpdGlvbhIeCgJ0bxgDIAEoCzISLmdseXBoLnYxLlBvc2l0aW9uEhIKCnN0YXJ0X3RpY2sYBCABKAQSEwoLYXJyaXZlX3RpY2sYBSABKAQiWgoOQ2hhcmFjdGVyTW92ZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEiQKCHBvc2l0aW9uGAIgASgLMhIuZ2x5cGgudjEuUG9zaXRpb24SDAoEdGljaxgDIAEoBCJWChVDaGFyYWN0ZXJTdGF0ZUNoYW5nZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEicKBXN0YXRlGAIgASgOMhguZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGUiJQoNQ2hhcmFjdGVyTGVmdBIUCgxjaGFyYWN0ZXJfaWQYASABKA0iGAoIVGlja1N5bmMSDAoEdGljaxgBIAEoBCJsCgVIZWFyZBISCgpzcGVha2VyX2lkGAEgASgNEiIKBG1vZGUYAiABKA4yFC5nbHlwaC52MS5TcGVlY2hNb2RlEgwKBHRleHQYAyABKAkSDwoHbXVmZmxlZBgEIAEoCBIMCgR0aWNrGAUgASgEIiEKD0NvbW1hbmRSZWplY3RlZBIOCgZyZWFzb24YASABKAlCK1opZ2x5cGgvc2VydmVyL2ludGVybmFsL3BiL2dseXBoL3YxO2dseXBodjFiBnByb3RvMw", [file_glyph_v1_ping, file_glyph_v1_world]);
+  fileDesc("ChdnbHlwaC92MS9tZXNzYWdlcy5wcm90bxIIZ2x5cGgudjEijQIKDUNsaWVudE1lc3NhZ2USHgoEcGluZxgBIAEoCzIOLmdseXBoLnYxLlBpbmdIABIeCgRqb2luGAIgASgLMg4uZ2x5cGgudjEuSm9pbkgAEh4KBG1vdmUYAyABKAsyDi5nbHlwaC52MS5Nb3ZlSAASHAoDc2F5GAQgASgLMg0uZ2x5cGgudjEuU2F5SAASMQoOZGVidWdfdGVsZXBvcnQYBSABKAsyFy5nbHlwaC52MS5EZWJ1Z1RlbGVwb3J0SAASQAoWZGVidWdfb3ZlcnZpZXdfcmVxdWVzdBgGIAEoCzIeLmdseXBoLnYxLkRlYnVnT3ZlcnZpZXdSZXF1ZXN0SABCCQoHbWVzc2FnZSKWBQoNU2VydmVyTWVzc2FnZRIeCgRwb25nGAEgASgLMg4uZ2x5cGgudjEuUG9uZ0gAEjEKDndvcmxkX3NuYXBzaG90GAIgASgLMhcuZ2x5cGgudjEuV29ybGRTbmFwc2hvdEgAEjkKEmNoYXJhY3Rlcl9hcHBlYXJlZBgDIAEoCzIbLmdseXBoLnYxLkNoYXJhY3RlckFwcGVhcmVkSAASLQoMc3RlcF9zdGFydGVkGAQgASgLMhUuZ2x5cGgudjEuU3RlcFN0YXJ0ZWRIABIzCg9jaGFyYWN0ZXJfbW92ZWQYBSABKAsyGC5nbHlwaC52MS5DaGFyYWN0ZXJNb3ZlZEgAEkIKF2NoYXJhY3Rlcl9zdGF0ZV9jaGFuZ2VkGAYgASgLMh8uZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGVDaGFuZ2VkSAASMQoOY2hhcmFjdGVyX2xlZnQYByABKAsyFy5nbHlwaC52MS5DaGFyYWN0ZXJMZWZ0SAASNQoQY29tbWFuZF9yZWplY3RlZBgIIAEoCzIZLmdseXBoLnYxLkNvbW1hbmRSZWplY3RlZEgAEicKCXRpY2tfc3luYxgJIAEoCzISLmdseXBoLnYxLlRpY2tTeW5jSAASIAoFaGVhcmQYCiABKAsyDy5nbHlwaC52MS5IZWFyZEgAEikKCmNodW5rX2RhdGEYCyABKAsyEy5nbHlwaC52MS5DaHVua0RhdGFIABIxCg5jaHVua191bmxvYWRlZBgMIAEoCzIXLmdseXBoLnYxLkNodW5rVW5sb2FkZWRIABIxCg5kZWJ1Z19vdmVydmlldxgNIAEoCzIXLmdseXBoLnYxLkRlYnVnT3ZlcnZpZXdIAEIJCgdtZXNzYWdlIhQKBEpvaW4SDAoEbmFtZRgBIAEoCSIuCgRNb3ZlEiYKCWRpcmVjdGlvbhgBIAEoDjITLmdseXBoLnYxLkRpcmVjdGlvbiI3CgNTYXkSIgoEbW9kZRgBIAEoDjIULmdseXBoLnYxLlNwZWVjaE1vZGUSDAoEdGV4dBgCIAEoCSKvAQoNV29ybGRTbmFwc2hvdBIZChF5b3VyX2NoYXJhY3Rlcl9pZBgBIAEoDRIMCgR0aWNrGAIgASgEEicKCmNoYXJhY3RlcnMYBCADKAsyEy5nbHlwaC52MS5DaGFyYWN0ZXISHgoDbWFwGAUgASgLMhEuZ2x5cGgudjEuTWFwSW5mbxImCgp0aWxlX3R5cGVzGAYgAygLMhIuZ2x5cGgudjEuVGlsZVR5cGVKBAgDEAQibAoJQ2h1bmtEYXRhEh0KA21hcBgBIAEoCzIQLmdseXBoLnYxLk1hcFJlZhIKCgJjeBgCIAEoBRIKCgJjeRgDIAEoBRINCgV0aWxlcxgEIAMoDRIZChFnZW5lcmF0b3JfdmVyc2lvbhgFIAEoDSJGCg1DaHVua1VubG9hZGVkEh0KA21hcBgBIAEoCzIQLmdseXBoLnYxLk1hcFJlZhIKCgJjeBgCIAEoBRIKCgJjeRgDIAEoBSI7ChFDaGFyYWN0ZXJBcHBlYXJlZBImCgljaGFyYWN0ZXIYASABKAsyEy5nbHlwaC52MS5DaGFyYWN0ZXIijgEKC1N0ZXBTdGFydGVkEhQKDGNoYXJhY3Rlcl9pZBgBIAEoDRIgCgRmcm9tGAIgASgLMhIuZ2x5cGgudjEuUG9zaXRpb24SHgoCdG8YAyABKAsyEi5nbHlwaC52MS5Qb3NpdGlvbhISCgpzdGFydF90aWNrGAQgASgEEhMKC2Fycml2ZV90aWNrGAUgASgEIloKDkNoYXJhY3Rlck1vdmVkEhQKDGNoYXJhY3Rlcl9pZBgBIAEoDRIkCghwb3NpdGlvbhgCIAEoCzISLmdseXBoLnYxLlBvc2l0aW9uEgwKBHRpY2sYAyABKAQiVgoVQ2hhcmFjdGVyU3RhdGVDaGFuZ2VkEhQKDGNoYXJhY3Rlcl9pZBgBIAEoDRInCgVzdGF0ZRgCIAEoDjIYLmdseXBoLnYxLkNoYXJhY3RlclN0YXRlIiUKDUNoYXJhY3RlckxlZnQSFAoMY2hhcmFjdGVyX2lkGAEgASgNIhgKCFRpY2tTeW5jEgwKBHRpY2sYASABKAQibAoFSGVhcmQSEgoKc3BlYWtlcl9pZBgBIAEoDRIiCgRtb2RlGAIgASgOMhQuZ2x5cGgudjEuU3BlZWNoTW9kZRIMCgR0ZXh0GAMgASgJEg8KB211ZmZsZWQYBCABKAgSDAoEdGljaxgFIAEoBCIhCg9Db21tYW5kUmVqZWN0ZWQSDgoGcmVhc29uGAEgASgJIiUKDURlYnVnVGVsZXBvcnQSCQoBeBgBIAEoBRIJCgF5GAIgASgFIhYKFERlYnVnT3ZlcnZpZXdSZXF1ZXN0IncKDURlYnVnT3ZlcnZpZXcSHQoDbWFwGAEgASgLMhAuZ2x5cGgudjEuTWFwUmVmEg0KBXdpZHRoGAIgASgNEg4KBmhlaWdodBgDIAEoDRINCgVjZWxscxgEIAMoDRIZChFnZW5lcmF0b3JfdmVyc2lvbhgFIAEoDUIrWilnbHlwaC9zZXJ2ZXIvaW50ZXJuYWwvcGIvZ2x5cGgvdjE7Z2x5cGh2MWIGcHJvdG8z", [file_glyph_v1_ping, file_glyph_v1_world]);
 
 /**
  * ClientMessage is the envelope for everything a client sends.
@@ -50,6 +50,18 @@ export type ClientMessage = Message<"glyph.v1.ClientMessage"> & {
      */
     value: Say;
     case: "say";
+  } | {
+    /**
+     * @generated from field: glyph.v1.DebugTeleport debug_teleport = 5;
+     */
+    value: DebugTeleport;
+    case: "debugTeleport";
+  } | {
+    /**
+     * @generated from field: glyph.v1.DebugOverviewRequest debug_overview_request = 6;
+     */
+    value: DebugOverviewRequest;
+    case: "debugOverviewRequest";
   } | { case: undefined; value?: undefined };
 };
 
@@ -130,6 +142,24 @@ export type ServerMessage = Message<"glyph.v1.ServerMessage"> & {
      */
     value: Heard;
     case: "heard";
+  } | {
+    /**
+     * @generated from field: glyph.v1.ChunkData chunk_data = 11;
+     */
+    value: ChunkData;
+    case: "chunkData";
+  } | {
+    /**
+     * @generated from field: glyph.v1.ChunkUnloaded chunk_unloaded = 12;
+     */
+    value: ChunkUnloaded;
+    case: "chunkUnloaded";
+  } | {
+    /**
+     * @generated from field: glyph.v1.DebugOverview debug_overview = 13;
+     */
+    value: DebugOverview;
+    case: "debugOverview";
   } | { case: undefined; value?: undefined };
 };
 
@@ -227,16 +257,25 @@ export type WorldSnapshot = Message<"glyph.v1.WorldSnapshot"> & {
   tick: bigint;
 
   /**
-   * @generated from field: glyph.v1.Room room = 3;
-   */
-  room?: Room | undefined;
-
-  /**
-   * Everyone in the room, including you.
+   * Characters in view, including you.
    *
    * @generated from field: repeated glyph.v1.Character characters = 4;
    */
   characters: Character[];
+
+  /**
+   * The map you are on. Its ground arrives as ChunkData.
+   *
+   * @generated from field: glyph.v1.MapInfo map = 5;
+   */
+  map?: MapInfo | undefined;
+
+  /**
+   * The tile catalogue: what every tile id in a chunk means (ADR 035).
+   *
+   * @generated from field: repeated glyph.v1.TileType tile_types = 6;
+   */
+  tileTypes: TileType[];
 };
 
 /**
@@ -245,6 +284,78 @@ export type WorldSnapshot = Message<"glyph.v1.WorldSnapshot"> & {
  */
 export const WorldSnapshotSchema: GenMessage<WorldSnapshot> = /*@__PURE__*/
   messageDesc(file_glyph_v1_messages, 5);
+
+/**
+ * ChunkData: the tiles of one chunk, row by row, as tile ids. It is sent for
+ * the chunks around you as you move (ADR 036).
+ *
+ * @generated from message glyph.v1.ChunkData
+ */
+export type ChunkData = Message<"glyph.v1.ChunkData"> & {
+  /**
+   * @generated from field: glyph.v1.MapRef map = 1;
+   */
+  map?: MapRef | undefined;
+
+  /**
+   * @generated from field: int32 cx = 2;
+   */
+  cx: number;
+
+  /**
+   * @generated from field: int32 cy = 3;
+   */
+  cy: number;
+
+  /**
+   * @generated from field: repeated uint32 tiles = 4;
+   */
+  tiles: number[];
+
+  /**
+   * The chunk generator version it was made with (ADR 005).
+   *
+   * @generated from field: uint32 generator_version = 5;
+   */
+  generatorVersion: number;
+};
+
+/**
+ * Describes the message glyph.v1.ChunkData.
+ * Use `create(ChunkDataSchema)` to create a new message.
+ */
+export const ChunkDataSchema: GenMessage<ChunkData> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_messages, 6);
+
+/**
+ * ChunkUnloaded: the server no longer keeps you up to date on this chunk;
+ * forget it.
+ *
+ * @generated from message glyph.v1.ChunkUnloaded
+ */
+export type ChunkUnloaded = Message<"glyph.v1.ChunkUnloaded"> & {
+  /**
+   * @generated from field: glyph.v1.MapRef map = 1;
+   */
+  map?: MapRef | undefined;
+
+  /**
+   * @generated from field: int32 cx = 2;
+   */
+  cx: number;
+
+  /**
+   * @generated from field: int32 cy = 3;
+   */
+  cy: number;
+};
+
+/**
+ * Describes the message glyph.v1.ChunkUnloaded.
+ * Use `create(ChunkUnloadedSchema)` to create a new message.
+ */
+export const ChunkUnloadedSchema: GenMessage<ChunkUnloaded> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_messages, 7);
 
 /**
  * CharacterAppeared: a character came into view (joined or entered the room).
@@ -263,7 +374,7 @@ export type CharacterAppeared = Message<"glyph.v1.CharacterAppeared"> & {
  * Use `create(CharacterAppearedSchema)` to create a new message.
  */
 export const CharacterAppearedSchema: GenMessage<CharacterAppeared> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 6);
+  messageDesc(file_glyph_v1_messages, 8);
 
 /**
  * StepStarted: a character began a step. The position changes on arrive_tick,
@@ -303,7 +414,7 @@ export type StepStarted = Message<"glyph.v1.StepStarted"> & {
  * Use `create(StepStartedSchema)` to create a new message.
  */
 export const StepStartedSchema: GenMessage<StepStarted> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 7);
+  messageDesc(file_glyph_v1_messages, 9);
 
 /**
  * CharacterMoved: a character's position changed.
@@ -332,7 +443,7 @@ export type CharacterMoved = Message<"glyph.v1.CharacterMoved"> & {
  * Use `create(CharacterMovedSchema)` to create a new message.
  */
 export const CharacterMovedSchema: GenMessage<CharacterMoved> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 8);
+  messageDesc(file_glyph_v1_messages, 10);
 
 /**
  * @generated from message glyph.v1.CharacterStateChanged
@@ -354,7 +465,7 @@ export type CharacterStateChanged = Message<"glyph.v1.CharacterStateChanged"> & 
  * Use `create(CharacterStateChangedSchema)` to create a new message.
  */
 export const CharacterStateChangedSchema: GenMessage<CharacterStateChanged> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 9);
+  messageDesc(file_glyph_v1_messages, 11);
 
 /**
  * CharacterLeft: a character is no longer in view.
@@ -373,7 +484,7 @@ export type CharacterLeft = Message<"glyph.v1.CharacterLeft"> & {
  * Use `create(CharacterLeftSchema)` to create a new message.
  */
 export const CharacterLeftSchema: GenMessage<CharacterLeft> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 10);
+  messageDesc(file_glyph_v1_messages, 12);
 
 /**
  * TickSync carries the current server tick, sent to everyone once a second
@@ -394,7 +505,7 @@ export type TickSync = Message<"glyph.v1.TickSync"> & {
  * Use `create(TickSyncSchema)` to create a new message.
  */
 export const TickSyncSchema: GenMessage<TickSync> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 11);
+  messageDesc(file_glyph_v1_messages, 13);
 
 /**
  * Heard: speech reached you. In the muffled band words are dropped, each run
@@ -439,7 +550,7 @@ export type Heard = Message<"glyph.v1.Heard"> & {
  * Use `create(HeardSchema)` to create a new message.
  */
 export const HeardSchema: GenMessage<Heard> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 12);
+  messageDesc(file_glyph_v1_messages, 14);
 
 /**
  * CommandRejected: the last command could not be carried out.
@@ -459,5 +570,90 @@ export type CommandRejected = Message<"glyph.v1.CommandRejected"> & {
  * Use `create(CommandRejectedSchema)` to create a new message.
  */
 export const CommandRejectedSchema: GenMessage<CommandRejected> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 13);
+  messageDesc(file_glyph_v1_messages, 15);
+
+/**
+ * DebugTeleport moves you at once to (x, y) on your current map, or to the
+ * nearest free tile you can stand on, once its chunk has loaded.
+ *
+ * @generated from message glyph.v1.DebugTeleport
+ */
+export type DebugTeleport = Message<"glyph.v1.DebugTeleport"> & {
+  /**
+   * @generated from field: int32 x = 1;
+   */
+  x: number;
+
+  /**
+   * @generated from field: int32 y = 2;
+   */
+  y: number;
+};
+
+/**
+ * Describes the message glyph.v1.DebugTeleport.
+ * Use `create(DebugTeleportSchema)` to create a new message.
+ */
+export const DebugTeleportSchema: GenMessage<DebugTeleport> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_messages, 16);
+
+/**
+ * DebugOverviewRequest asks for the whole planet overview, ignoring fog of
+ * war (ADR 033).
+ *
+ * @generated from message glyph.v1.DebugOverviewRequest
+ */
+export type DebugOverviewRequest = Message<"glyph.v1.DebugOverviewRequest"> & {
+};
+
+/**
+ * Describes the message glyph.v1.DebugOverviewRequest.
+ * Use `create(DebugOverviewRequestSchema)` to create a new message.
+ */
+export const DebugOverviewRequestSchema: GenMessage<DebugOverviewRequest> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_messages, 17);
+
+/**
+ * DebugOverview: one tile id per chunk, row by row, sampled at each chunk's
+ * centre.
+ *
+ * @generated from message glyph.v1.DebugOverview
+ */
+export type DebugOverview = Message<"glyph.v1.DebugOverview"> & {
+  /**
+   * @generated from field: glyph.v1.MapRef map = 1;
+   */
+  map?: MapRef | undefined;
+
+  /**
+   * in chunks
+   *
+   * @generated from field: uint32 width = 2;
+   */
+  width: number;
+
+  /**
+   * in chunks
+   *
+   * @generated from field: uint32 height = 3;
+   */
+  height: number;
+
+  /**
+   * @generated from field: repeated uint32 cells = 4;
+   */
+  cells: number[];
+
+  /**
+   * @generated from field: uint32 generator_version = 5;
+   */
+  generatorVersion: number;
+};
+
+/**
+ * Describes the message glyph.v1.DebugOverview.
+ * Use `create(DebugOverviewSchema)` to create a new message.
+ */
+export const DebugOverviewSchema: GenMessage<DebugOverview> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_messages, 18);
 

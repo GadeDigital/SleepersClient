@@ -3,7 +3,7 @@ import {
 	CharacterState,
 	type Character,
 	type Direction,
-	type Room,
+	type MapInfo,
 	type SpeechMode
 } from '$lib/proto/glyph/v1/world_pb';
 import { TickClock } from './tick-clock';
@@ -58,8 +58,8 @@ export interface CharacterView {
  * predicted here (ADR 002).
  */
 export class GameState {
-	/** The room, replaced whole by each snapshot. */
-	room = $state.raw<Room | null>(null);
+	/** The map you are on, from the snapshot; its ground arrives in chunks. */
+	map = $state.raw<MapInfo | null>(null);
 	/** The character this connection controls; 0 before the snapshot. */
 	myId = $state(0);
 	/** Everyone in view, by id. */
@@ -91,7 +91,7 @@ export class GameState {
 		switch (m.case) {
 			case 'worldSnapshot': {
 				this.clock.sample(Number(m.value.tick), nowMs);
-				this.room = m.value.room ?? null;
+				this.map = m.value.map ?? null;
 				this.myId = m.value.yourCharacterId;
 				const characters: Record<number, CharacterView> = {};
 				for (const c of m.value.characters) characters[c.id] = view(c);
