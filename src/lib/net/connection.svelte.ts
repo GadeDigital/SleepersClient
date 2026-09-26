@@ -80,6 +80,18 @@ export class Connection {
 		this.#send({ message: { case: 'say', value: { mode, text } } });
 	}
 
+	/** DEVELOPMENT ONLY: jump to (x, y); the server must run with -dev-tools. */
+	debugTeleport(x: number, y: number): void {
+		if (this.status !== 'joined') return;
+		this.#send({ message: { case: 'debugTeleport', value: { x, y } } });
+	}
+
+	/** DEVELOPMENT ONLY: ask for the whole planet overview. */
+	debugOverview(): void {
+		if (this.status !== 'joined') return;
+		this.#send({ message: { case: 'debugOverviewRequest', value: {} } });
+	}
+
 	close(): void {
 		const ws = this.#ws;
 		this.#ws = null;

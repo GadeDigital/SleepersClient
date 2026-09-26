@@ -36,6 +36,13 @@ export function chunkKey(cx: number, cy: number): string {
 	return `${cx},${cy}`;
 }
 
+/** DEVELOPMENT ONLY: the planet overview, one cell per chunk. */
+export interface Overview {
+	width: number;
+	height: number;
+	cells: Uint16Array;
+}
+
 /** One line in the chat log: something you heard, or said yourself. */
 export interface ChatEntry {
 	/** Numbers entries in arrival order; unique for the session. */
@@ -82,6 +89,8 @@ export class GameState {
 	 */
 	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- deliberately not reactive, see above
 	readonly chunks = new Map<string, Chunk>();
+	/** DEVELOPMENT ONLY: the planet overview, once asked for. */
+	overview = $state.raw<Overview | null>(null);
 	/** The character this connection controls; 0 before the snapshot. */
 	myId = $state(0);
 	/** Everyone in view, by id. */
@@ -192,6 +201,13 @@ export class GameState {
 			}
 			case 'chunkUnloaded':
 				this.chunks.delete(chunkKey(m.value.cx, m.value.cy));
+				break;
+			case 'debugOverview':
+				this.overview = {
+					width: m.value.width,
+					height: m.value.height,
+					cells: Uint16Array.from(m.value.cells)
+				};
 				break;
 			case 'tickSync':
 				this.clock.sample(Number(m.value.tick), nowMs);

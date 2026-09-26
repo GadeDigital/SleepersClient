@@ -3,6 +3,7 @@
 	import { Connection } from '$lib/net/connection.svelte';
 	import ChatInput from '$lib/ui/ChatInput.svelte';
 	import ChatLog from '$lib/ui/ChatLog.svelte';
+	import DebugPanel from '$lib/ui/DebugPanel.svelte';
 	import NamePrompt from '$lib/ui/NamePrompt.svelte';
 	import WorldView from '$lib/world/WorldView.svelte';
 
@@ -17,6 +18,11 @@
 
 {#if connection.status === 'joined'}
 	<WorldView game={connection.game} onmove={(direction) => connection.move(direction)} />
+	<DebugPanel
+		game={connection.game}
+		onteleport={(x, y) => connection.debugTeleport(x, y)}
+		onoverview={() => connection.debugOverview()}
+	/>
 	<div class="hud">
 		<ChatLog entries={connection.game.log} />
 		<ChatInput
