@@ -58,6 +58,10 @@ src/lib/proto/      TypeScript GENERATED from ../glyph-server/proto (committed, 
 - Record any design decision as a new ADR in `architecture.md`, with a changelog row (bump the version). Never edit an accepted ADR; supersede it with a new one.
 - These doc edits are the only changes a **[client]** task may make in glyph-server. Commit them in glyph-server, separately from the glyph-client commit.
 
+## Tools
+
+- **Svelte MCP**: for any Svelte or SvelteKit question, look up the current docs with `list-sections` and `get-documentation` rather than relying on memory. Run `svelte-autofixer` on every Svelte component you write or change, and repeat until it reports no issues. Never use `playground-link`, since our code lives in files.
+
 ## Environment
 
 Arch Linux, VSCodium with the Claude Code extension. Toolchain: Node.js, npm, the Protocol Buffers compiler, git.
