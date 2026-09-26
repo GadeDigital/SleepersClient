@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { zoomFor } from './world-renderer';
+import { zoomFor } from './scale';
 
 describe('zoomFor', () => {
 	it('gives a whole number of physical pixels per art pixel near 3 CSS pixels', () => {

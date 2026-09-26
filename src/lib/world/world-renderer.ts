@@ -1,24 +1,11 @@
 import { Container, Graphics, TextureStyle, type Application } from 'pixi.js';
 import type { GameState } from '$lib/net/game-state.svelte';
 import { Tile, type Room } from '$lib/proto/glyph/v1/world_pb';
+import { CharacterSprite } from './character-sprite';
+import { TILE_SIZE, zoomFor } from './scale';
 
-/**
- * Size of one tile in art pixels. A placeholder until the art size is agreed
- * with the artist (see open questions in the architecture doc).
- */
-export const TILE_SIZE = 16;
-
-/**
- * How large one art pixel should look, in CSS pixels. The actual zoom is the
- * nearest whole number of physical pixels to this, so every art pixel covers
- * the same square of screen pixels at any browser zoom or display density.
- */
-const TARGET_CSS_ZOOM = 3;
-
-/** Physical pixels per art pixel for a devicePixelRatio: a whole number, at least 1. */
-export function zoomFor(devicePixelRatio: number): number {
-	return Math.max(1, Math.round(TARGET_CSS_ZOOM * devicePixelRatio));
-}
+/** Name label size in CSS pixels. */
+const LABEL_CSS_SIZE = 12;
 
 const FLOOR = 0x2a2d3a;
 const FLOOR_EDGE = 0x24262f;
@@ -39,14 +26,19 @@ export class WorldRenderer {
 	/** Everything in world coordinates, in art pixels; the camera moves and scales it. */
 	readonly #world = new Container();
 	readonly #tiles = new Graphics();
+	readonly #bodies = new Container();
+	/** Names, in unscaled physical pixels above the world. */
+	readonly #labels = new Container();
+	readonly #sprites = new Map<number, CharacterSprite>();
 	/** Physical pixels per art pixel. */
 	#zoom = 1;
+	#fontSize = LABEL_CSS_SIZE;
 
 	constructor(app: Application, game: GameState) {
 		this.#app = app;
 		this.#game = game;
-		this.#world.addChild(this.#tiles);
-		app.stage.addChild(this.#world);
+		this.#world.addChild(this.#tiles, this.#bodies);
+		app.stage.addChild(this.#world, this.#labels);
 		app.ticker.add(this.#frame);
 	}
 
@@ -58,6 +50,7 @@ export class WorldRenderer {
 	resize(width: number, height: number, devicePixelRatio: number): void {
 		this.#app.renderer.resize(width, height);
 		this.#zoom = zoomFor(devicePixelRatio);
+		this.#fontSize = Math.round(LABEL_CSS_SIZE * devicePixelRatio);
 	}
 
 	/** Redraws the tile layer. Called when the snapshot brings a new room. */
@@ -82,7 +75,9 @@ export class WorldRenderer {
 
 	destroy(): void {
 		this.#app.ticker.remove(this.#frame);
+		this.#sprites.clear();
 		this.#world.destroy({ children: true });
+		this.#labels.destroy({ children: true });
 	}
 
 	#frame = (): void => {
@@ -95,5 +90,31 @@ export class WorldRenderer {
 			Math.round((this.#app.screen.width - w) / 2),
 			Math.round((this.#app.screen.height - h) / 2)
 		);
+		this.#drawCharacters();
 	};
+
+	/** Keeps one sprite per character in view, at the tile the server gave. */
+	#drawCharacters(): void {
+		const characters = this.#game.characters;
+		for (const [id, sprite] of this.#sprites) {
+			if (!(id in characters)) {
+				sprite.destroy();
+				this.#sprites.delete(id);
+			}
+		}
+		for (const c of Object.values(characters)) {
+			let sprite = this.#sprites.get(c.id);
+			if (!sprite) {
+				sprite = new CharacterSprite(c, c.id === this.#game.myId, this.#bodies, this.#labels);
+				this.#sprites.set(c.id, sprite);
+			}
+			sprite.place(
+				c.x * TILE_SIZE,
+				c.y * TILE_SIZE,
+				this.#world.position,
+				this.#zoom,
+				this.#fontSize
+			);
+		}
+	}
 }
