@@ -1,8 +1,8 @@
 import { create, type MessageInitShape } from '@bufbuild/protobuf';
 import { describe, expect, it } from 'vitest';
 import { ServerMessageSchema } from '$lib/proto/glyph/v1/messages_pb';
-import { CharacterState, Direction, Tile } from '$lib/proto/glyph/v1/world_pb';
-import { GameState } from './game-state.svelte';
+import { CharacterState, Direction, SpeechMode, Tile } from '$lib/proto/glyph/v1/world_pb';
+import { GameState, LOG_LIMIT } from './game-state.svelte';
 
 function msg(init: MessageInitShape<typeof ServerMessageSchema>) {
 	return create(ServerMessageSchema, init);
@@ -126,5 +126,31 @@ describe('GameState', () => {
 		const game = joined();
 		game.apply(msg({ message: { case: 'tickSync', value: { tick: 50n } } }), 2000);
 		expect(game.clock.now(2000)).toBe(50);
+	});
+
+	it('logs heard lines with the speaker and marks your own as spoken', () => {
+		const game = joined();
+		game.unspoken.push({ mode: SpeechMode.TALK, text: 'hi' });
+		const heard = (speakerId: number, text: string, muffled = false) =>
+			game.apply(
+				msg({
+					message: {
+						case: 'heard',
+						value: { speakerId, mode: SpeechMode.TALK, text, muffled, tick: 40n }
+					}
+				}),
+				0
+			);
+		heard(2, 'hello … there', true);
+		heard(1, 'hi');
+		expect(game.unspoken).toHaveLength(0);
+		expect(game.log.map((e) => [e.speaker, e.text, e.muffled, e.own])).toEqual([
+			['Ben', 'hello … there', true, false],
+			['Ana', 'hi', false, true]
+		]);
+
+		for (let i = 0; i < LOG_LIMIT + 5; i++) heard(2, `line ${i}`);
+		expect(game.log).toHaveLength(LOG_LIMIT);
+		expect(game.log.at(-1)?.text).toBe(`line ${LOG_LIMIT + 4}`);
 	});
 });

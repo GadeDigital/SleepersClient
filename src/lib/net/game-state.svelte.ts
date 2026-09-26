@@ -24,6 +24,22 @@ export interface UnspokenLine {
 	text: string;
 }
 
+/** One line in the chat log: something you heard, or said yourself. */
+export interface ChatEntry {
+	/** Numbers entries in arrival order; unique for the session. */
+	seq: number;
+	speakerId: number;
+	/** The speaker's name when the line was heard. */
+	speaker: string;
+	mode: SpeechMode;
+	text: string;
+	muffled: boolean;
+	own: boolean;
+}
+
+/** The oldest lines are forgotten beyond this many. */
+export const LOG_LIMIT = 1000;
+
 /** What the client knows about one character: only what the server said. */
 export interface CharacterView {
 	id: number;
@@ -58,6 +74,9 @@ export class GameState {
 	 * of your own Heard lines is the oldest one here.
 	 */
 	unspoken = $state<UnspokenLine[]>([]);
+	/** Everything heard, oldest first, up to LOG_LIMIT lines. */
+	log = $state.raw<ChatEntry[]>([]);
+	#seq = 0;
 
 	/** Not reactive: read every frame by the renderer. */
 	readonly clock = new TickClock();
@@ -118,9 +137,24 @@ export class GameState {
 			case 'characterLeft':
 				delete this.characters[m.value.characterId];
 				break;
-			case 'heard':
-				if (m.value.speakerId === this.myId) this.unspoken.shift();
+			case 'heard': {
+				const h = m.value;
+				const own = h.speakerId === this.myId;
+				if (own) this.unspoken.shift();
+				const entry: ChatEntry = {
+					seq: ++this.#seq,
+					speakerId: h.speakerId,
+					speaker: this.characters[h.speakerId]?.name ?? 'Someone',
+					mode: h.mode,
+					text: h.text,
+					muffled: h.muffled,
+					own
+				};
+				// Replaced whole rather than pushed: the log can be long, and a raw
+				// array avoids making every entry deeply reactive.
+				this.log = [...this.log.slice(-(LOG_LIMIT - 1)), entry];
 				break;
+			}
 			case 'tickSync':
 				this.clock.sample(Number(m.value.tick), nowMs);
 				break;
