@@ -33,8 +33,10 @@ export class WorldRenderer {
 	readonly #queued = new Graphics();
 	readonly #bodies = new Container({ sortableChildren: true });
 	/** Names, in unscaled physical pixels above the world. */
-	readonly #labels = new Container();
+	readonly #labels = new Container({ sortableChildren: true });
 	readonly #sprites = new Map<number, CharacterSprite>();
+	/** The last chat log line already shown as a speech bubble. */
+	#seenSeq = 0;
 	/** Physical pixels per art pixel. */
 	#zoom = 1;
 	#fontSize = LABEL_CSS_SIZE;
@@ -90,12 +92,25 @@ export class WorldRenderer {
 	}
 
 	#frame = (): void => {
-		const tickNow = this.#game.clock.now(performance.now());
+		const nowMs = performance.now();
+		const tickNow = this.#game.clock.now(nowMs);
 		this.#world.scale.set(this.#zoom);
 		this.#followCamera(tickNow);
-		this.#drawCharacters(tickNow);
+		this.#drawCharacters(tickNow, nowMs);
+		this.#showNewLines(nowMs);
 		this.#drawQueued();
 	};
+
+	/** Puts each line heard since the last frame over its speaker. */
+	#showNewLines(nowMs: number): void {
+		const log = this.#game.log;
+		let i = log.length;
+		while (i > 0 && log[i - 1].seq > this.#seenSeq) i--;
+		for (; i < log.length; i++) {
+			this.#sprites.get(log[i].speakerId)?.bubble.show(log[i], nowMs);
+		}
+		this.#seenSeq = log.at(-1)?.seq ?? this.#seenSeq;
+	}
 
 	/**
 	 * Centres the view on your own character, gliding with it. Before the
@@ -137,7 +152,7 @@ export class WorldRenderer {
 	}
 
 	/** Keeps one sprite per character in view, gliding along any step. */
-	#drawCharacters(tickNow: number): void {
+	#drawCharacters(tickNow: number, nowMs: number): void {
 		const characters = this.#game.characters;
 		for (const [id, sprite] of this.#sprites) {
 			if (!(id in characters)) {
@@ -158,7 +173,8 @@ export class WorldRenderer {
 				this.#snap(y * TILE_SIZE),
 				this.#world.position,
 				this.#zoom,
-				this.#fontSize
+				this.#fontSize,
+				nowMs
 			);
 		}
 	}

@@ -1,6 +1,7 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { isUnconscious, type CharacterView } from '$lib/net/game-state.svelte';
 import { TILE_SIZE } from './scale';
+import { SpeechBubble } from './speech-bubble';
 
 /** Placeholder body colours, picked by character id. */
 const COLOURS = [0xe0a458, 0x5fb4a2, 0xc9656f, 0x7f8fd6, 0xb8c46a, 0xc58ad6, 0x6fb7d9, 0xd9926f];
@@ -23,6 +24,8 @@ const LYING_LABEL_ALPHA = 0.5;
 export class CharacterSprite {
 	readonly body = new Graphics();
 	readonly label: Text;
+	/** The latest line the character said, above the name. */
+	readonly bubble: SpeechBubble;
 	/** The state the body was last drawn for, to redraw only on change. */
 	#drawn: { unconscious: boolean; isYou: boolean } | null = null;
 	/** Top of the body in art pixels within its tile; the name sits above it. */
@@ -40,6 +43,7 @@ export class CharacterSprite {
 		});
 		this.label.anchor.set(0.5, 1);
 		labels.addChild(this.label);
+		this.bubble = new SpeechBubble(labels);
 	}
 
 	/** Draws the body for the character's state; cheap when nothing changed. */
@@ -67,19 +71,30 @@ export class CharacterSprite {
 	/**
 	 * Places the character at art-pixel position (x, y) in the world.
 	 * `origin` is where the world's (0, 0) is on screen and `zoom` is physical
-	 * pixels per art pixel; `fontSize` is in physical pixels.
+	 * pixels per art pixel; `fontSize` is in physical pixels. Any speech
+	 * bubble sits just above the name.
 	 */
-	place(x: number, y: number, origin: { x: number; y: number }, zoom: number, fontSize: number) {
+	place(
+		x: number,
+		y: number,
+		origin: { x: number; y: number },
+		zoom: number,
+		fontSize: number,
+		nowMs: number
+	) {
 		this.body.position.set(x, y);
 		if (this.label.style.fontSize !== fontSize) this.label.style.fontSize = fontSize;
 		this.label.position.set(
 			Math.round(origin.x + (x + TILE_SIZE / 2) * zoom),
 			Math.round(origin.y + (y + this.#top - 1) * zoom)
 		);
+		const gap = Math.round(fontSize * 0.3);
+		this.bubble.place(this.label.x, this.label.y - this.label.height - gap, nowMs, fontSize);
 	}
 
 	destroy(): void {
 		this.body.destroy();
 		this.label.destroy();
+		this.bubble.destroy();
 	}
 }
