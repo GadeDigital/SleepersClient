@@ -31,4 +31,13 @@ describe('glidePosition', () => {
 		expect(glidePosition(stepping, 8)).toEqual([1, 1]);
 		expect(glidePosition(stepping, 17)).toEqual([2, 2]);
 	});
+
+	it('glides the short way across the seam', () => {
+		const seam: CharacterView = {
+			...standing,
+			step: { fromX: 63, fromY: 1, toX: 0, toY: 1, startTick: 10, arriveTick: 15 }
+		};
+		expect(glidePosition(seam, 12.5, 64)).toEqual([63.5, 1]);
+		expect(glidePosition(seam, 15, 64)).toEqual([64, 1]);
+	});
 });

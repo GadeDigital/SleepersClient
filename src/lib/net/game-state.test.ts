@@ -20,6 +20,10 @@ function joined(): GameState {
 					yourCharacterId: 1,
 					tick: 30n,
 					map: { ref: { address: 'g/test' }, width: 64, height: 64, wrapsX: true, chunkSize: 32 },
+					tileTypes: [
+						{ id: 1, name: 'floor', blocks: false, colour: 0x2a2d3a },
+						{ id: 2, name: 'wall', blocks: true, colour: 0x6b6f80 }
+					],
 					characters: [
 						{ id: 1, name: 'Ana', position: { x: 1, y: 1 }, state: AWAKE },
 						{ id: 2, name: 'Ben', position: { x: 2, y: 1 }, state: AWAKE }
@@ -152,5 +156,25 @@ describe('GameState', () => {
 		for (let i = 0; i < LOG_LIMIT + 5; i++) heard(2, `line ${i}`);
 		expect(game.log).toHaveLength(LOG_LIMIT);
 		expect(game.log.at(-1)?.text).toBe(`line ${LOG_LIMIT + 4}`);
+	});
+
+	it('keeps the tile catalogue and the chunks it holds', () => {
+		const game = joined();
+		expect(game.tileTypes.get(2)?.name).toBe('wall');
+		const chunk = (cx: number, address = 'g/test') =>
+			msg({
+				message: {
+					case: 'chunkData',
+					value: { map: { address }, cx, cy: 0, tiles: [1, 2, 1], generatorVersion: 1 }
+				}
+			});
+		game.apply(chunk(0), 0);
+		game.apply(chunk(1), 0);
+		game.apply(chunk(5, 'g/elsewhere'), 0);
+		expect([...game.chunks.keys()]).toEqual(['0,0', '1,0']);
+		expect([...(game.chunks.get('0,0')?.tiles ?? [])]).toEqual([1, 2, 1]);
+
+		game.apply(msg({ message: { case: 'chunkUnloaded', value: { cx: 0, cy: 0 } } }), 0);
+		expect([...game.chunks.keys()]).toEqual(['1,0']);
 	});
 });

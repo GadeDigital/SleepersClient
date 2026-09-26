@@ -1,9 +1,11 @@
 import { Container, Graphics, TextureStyle, type Application } from 'pixi.js';
 import type { GameState } from '$lib/net/game-state.svelte';
 import { CharacterSprite } from './character-sprite';
+import { drawChunk } from './chunk-layer';
 import { glidePosition } from './glide';
 import { queuedTarget } from './move-input';
 import { TILE_SIZE, zoomFor } from './scale';
+import { nearest } from './wrap';
 
 /** Name label size in CSS pixels. */
 const LABEL_CSS_SIZE = 12;
@@ -23,6 +25,11 @@ export class WorldRenderer {
 	readonly #game: GameState;
 	/** Everything in world coordinates, in art pixels; the camera moves and scales it. */
 	readonly #world = new Container();
+	/** The ground: one layer per chunk held, by chunk key. */
+	readonly #ground = new Container();
+	readonly #chunkLayers = new Map<string, Graphics>();
+	/** The camera's centre column in tiles; may lie past the seam while gliding. */
+	#camX = 0;
 	/** Faint outline of the tile your queued step heads for. */
 	readonly #queued = new Graphics();
 	readonly #bodies = new Container({ sortableChildren: true });
@@ -42,7 +49,7 @@ export class WorldRenderer {
 			.rect(0, 0, TILE_SIZE, TILE_SIZE)
 			.stroke({ color: QUEUED, width: 1, alignment: 1, alpha: 0.35 });
 		this.#queued.visible = false;
-		this.#world.addChild(this.#queued, this.#bodies);
+		this.#world.addChild(this.#ground, this.#queued, this.#bodies);
 		app.stage.addChild(this.#world, this.#labels);
 		app.ticker.add(this.#frame);
 	}
@@ -61,6 +68,7 @@ export class WorldRenderer {
 	destroy(): void {
 		this.#app.ticker.remove(this.#frame);
 		this.#sprites.clear();
+		this.#chunkLayers.clear();
 		this.#world.destroy({ children: true });
 		this.#labels.destroy({ children: true });
 	}
@@ -70,6 +78,7 @@ export class WorldRenderer {
 		const tickNow = this.#game.clock.now(nowMs);
 		this.#world.scale.set(this.#zoom);
 		this.#followCamera(tickNow);
+		this.#drawGround();
 		this.#drawCharacters(tickNow, nowMs);
 		this.#showNewLines(nowMs);
 		this.#drawQueued();
@@ -96,7 +105,8 @@ export class WorldRenderer {
 		let centreX: number;
 		let centreY: number;
 		if (me) {
-			const [x, y] = glidePosition(me, tickNow);
+			const [x, y] = glidePosition(me, tickNow, this.#wrapWidth());
+			this.#camX = x;
 			centreX = this.#snap(x * TILE_SIZE) + TILE_SIZE / 2;
 			centreY = this.#snap(y * TILE_SIZE) + TILE_SIZE / 2;
 		} else {
@@ -110,6 +120,44 @@ export class WorldRenderer {
 		);
 	}
 
+	/** The map's width if it wraps east to west, else undefined. */
+	#wrapWidth(): number | undefined {
+		const map = this.#game.map;
+		return map?.wrapsX ? map.width : undefined;
+	}
+
+	/** The copy of tile column x nearest the camera, on a map that wraps. */
+	#nearX(x: number): number {
+		const width = this.#wrapWidth();
+		return width ? nearest(x, this.#camX, width) : x;
+	}
+
+	/**
+	 * Keeps one layer per chunk the server has sent, and places each at its
+	 * copy nearest the camera, so the ground carries on across the seam.
+	 */
+	#drawGround(): void {
+		const chunks = this.#game.chunks;
+		const size = this.#game.map?.chunkSize ?? 32;
+		for (const [key, layer] of this.#chunkLayers) {
+			if (!chunks.has(key)) {
+				layer.destroy();
+				this.#chunkLayers.delete(key);
+			}
+		}
+		for (const [key, chunk] of chunks) {
+			let layer = this.#chunkLayers.get(key);
+			if (!layer) {
+				layer = drawChunk(chunk, size, this.#game.tileTypes);
+				this.#chunkLayers.set(key, layer);
+				this.#ground.addChild(layer);
+			}
+			// The chunk's centre decides which copy is nearest.
+			const left = this.#nearX(chunk.cx * size + size / 2) - size / 2;
+			layer.position.set(left * TILE_SIZE, chunk.cy * size * TILE_SIZE);
+		}
+	}
+
 	/** Shows the move you sent while stepping, which the server holds as queued. */
 	#drawQueued(): void {
 		const me = this.#game.me;
@@ -117,7 +165,7 @@ export class WorldRenderer {
 		this.#queued.visible = !!(me?.step && dir !== null);
 		if (!me?.step || dir === null) return;
 		const [x, y] = queuedTarget(me.step.toX, me.step.toY, dir);
-		this.#queued.position.set(x * TILE_SIZE, y * TILE_SIZE);
+		this.#queued.position.set(this.#nearX(x) * TILE_SIZE, y * TILE_SIZE);
 	}
 
 	/** Rounds an art-pixel coordinate to a whole physical pixel. */
@@ -141,7 +189,8 @@ export class WorldRenderer {
 				this.#sprites.set(c.id, sprite);
 			}
 			sprite.draw(c, c.id === this.#game.myId);
-			const [x, y] = glidePosition(c, tickNow);
+			const [gx, y] = glidePosition(c, tickNow, this.#wrapWidth());
+			const x = this.#nearX(gx);
 			sprite.place(
 				this.#snap(x * TILE_SIZE),
 				this.#snap(y * TILE_SIZE),

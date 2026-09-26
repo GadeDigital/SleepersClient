@@ -4,6 +4,7 @@ import {
 	type Character,
 	type Direction,
 	type MapInfo,
+	type TileType,
 	type SpeechMode
 } from '$lib/proto/glyph/v1/world_pb';
 import { TickClock } from './tick-clock';
@@ -22,6 +23,17 @@ export interface Step {
 export interface UnspokenLine {
 	mode: SpeechMode;
 	text: string;
+}
+
+/** One chunk of ground: size × size tile ids, row by row (ADR 036). */
+export interface Chunk {
+	cx: number;
+	cy: number;
+	tiles: Uint16Array;
+}
+
+export function chunkKey(cx: number, cy: number): string {
+	return `${cx},${cy}`;
 }
 
 /** One line in the chat log: something you heard, or said yourself. */
@@ -60,6 +72,16 @@ export interface CharacterView {
 export class GameState {
 	/** The map you are on, from the snapshot; its ground arrives in chunks. */
 	map = $state.raw<MapInfo | null>(null);
+	/** The tile catalogue from the snapshot, by id (ADR 035). Replaced whole. */
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- never mutated; $state.raw tracks replacement
+	tileTypes = $state.raw<ReadonlyMap<number, TileType>>(new Map());
+	/**
+	 * The chunks the server has sent and not unloaded, by chunkKey. Not
+	 * reactive on purpose: the renderer reads it every frame, and tracking
+	 * thousands of tile ids would cost for nothing.
+	 */
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- deliberately not reactive, see above
+	readonly chunks = new Map<string, Chunk>();
 	/** The character this connection controls; 0 before the snapshot. */
 	myId = $state(0);
 	/** Everyone in view, by id. */
@@ -92,6 +114,9 @@ export class GameState {
 			case 'worldSnapshot': {
 				this.clock.sample(Number(m.value.tick), nowMs);
 				this.map = m.value.map ?? null;
+				// eslint-disable-next-line svelte/prefer-svelte-reactivity -- replaced whole, never mutated
+				this.tileTypes = new Map(m.value.tileTypes.map((t) => [t.id, t]));
+				this.chunks.clear();
 				this.myId = m.value.yourCharacterId;
 				const characters: Record<number, CharacterView> = {};
 				for (const c of m.value.characters) characters[c.id] = view(c);
@@ -155,6 +180,19 @@ export class GameState {
 				this.log = [...this.log.slice(-(LOG_LIMIT - 1)), entry];
 				break;
 			}
+			case 'chunkData': {
+				const d = m.value;
+				if (d.map?.address !== this.map?.ref?.address) break; // not our map
+				this.chunks.set(chunkKey(d.cx, d.cy), {
+					cx: d.cx,
+					cy: d.cy,
+					tiles: Uint16Array.from(d.tiles)
+				});
+				break;
+			}
+			case 'chunkUnloaded':
+				this.chunks.delete(chunkKey(m.value.cx, m.value.cy));
+				break;
 			case 'tickSync':
 				this.clock.sample(Number(m.value.tick), nowMs);
 				break;
