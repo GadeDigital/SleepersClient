@@ -14,6 +14,11 @@ export default defineConfig({
 			adapter: adapter({ fallback: 'index.html' })
 		})
 	],
+	server: {
+		// Listen on IPv4 loopback, like glyph-server. "localhost" can resolve to
+		// IPv6 only, which a browser with IPv6 disabled cannot reach.
+		host: '127.0.0.1'
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
