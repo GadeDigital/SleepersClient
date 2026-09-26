@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file glyph/v1/world.proto.
  */
 export const file_glyph_v1_world: GenFile = /*@__PURE__*/
-  fileDesc("ChRnbHlwaC92MS93b3JsZC5wcm90bxIIZ2x5cGgudjEiIAoIUG9zaXRpb24SCQoBeBgBIAEoBRIJCgF5GAIgASgFIkQKBFJvb20SDQoFd2lkdGgYASABKA0SDgoGaGVpZ2h0GAIgASgNEh0KBXRpbGVzGAMgAygOMg4uZ2x5cGgudjEuVGlsZSJ0CglDaGFyYWN0ZXISCgoCaWQYASABKA0SDAoEbmFtZRgCIAEoCRIkCghwb3NpdGlvbhgDIAEoCzISLmdseXBoLnYxLlBvc2l0aW9uEicKBXN0YXRlGAQgASgOMhguZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGUq4AEKCURpcmVjdGlvbhIZChVESVJFQ1RJT05fVU5TUEVDSUZJRUQQABITCg9ESVJFQ1RJT05fTk9SVEgQARIYChRESVJFQ1RJT05fTk9SVEhfRUFTVBACEhIKDkRJUkVDVElPTl9FQVNUEAMSGAoURElSRUNUSU9OX1NPVVRIX0VBU1QQBBITCg9ESVJFQ1RJT05fU09VVEgQBRIYChRESVJFQ1RJT05fU09VVEhfV0VTVBAGEhIKDkRJUkVDVElPTl9XRVNUEAcSGAoURElSRUNUSU9OX05PUlRIX1dFU1QQCCo7CgRUaWxlEhQKEFRJTEVfVU5TUEVDSUZJRUQQABIOCgpUSUxFX0ZMT09SEAESDQoJVElMRV9XQUxMEAIqbQoOQ2hhcmFjdGVyU3RhdGUSHwobQ0hBUkFDVEVSX1NUQVRFX1VOU1BFQ0lGSUVEEAASGQoVQ0hBUkFDVEVSX1NUQVRFX0FXQUtFEAESHwobQ0hBUkFDVEVSX1NUQVRFX1VOQ09OU0NJT1VTEAJCK1opZ2x5cGgvc2VydmVyL2ludGVybmFsL3BiL2dseXBoL3YxO2dseXBodjFiBnByb3RvMw");
+  fileDesc("ChRnbHlwaC92MS93b3JsZC5wcm90bxIIZ2x5cGgudjEiIAoIUG9zaXRpb24SCQoBeBgBIAEoBRIJCgF5GAIgASgFIkQKBFJvb20SDQoFd2lkdGgYASABKA0SDgoGaGVpZ2h0GAIgASgNEh0KBXRpbGVzGAMgAygOMg4uZ2x5cGgudjEuVGlsZSJ0CglDaGFyYWN0ZXISCgoCaWQYASABKA0SDAoEbmFtZRgCIAEoCRIkCghwb3NpdGlvbhgDIAEoCzISLmdseXBoLnYxLlBvc2l0aW9uEicKBXN0YXRlGAQgASgOMhguZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGUq4AEKCURpcmVjdGlvbhIZChVESVJFQ1RJT05fVU5TUEVDSUZJRUQQABITCg9ESVJFQ1RJT05fTk9SVEgQARIYChRESVJFQ1RJT05fTk9SVEhfRUFTVBACEhIKDkRJUkVDVElPTl9FQVNUEAMSGAoURElSRUNUSU9OX1NPVVRIX0VBU1QQBBITCg9ESVJFQ1RJT05fU09VVEgQBRIYChRESVJFQ1RJT05fU09VVEhfV0VTVBAGEhIKDkRJUkVDVElPTl9XRVNUEAcSGAoURElSRUNUSU9OX05PUlRIX1dFU1QQCCpuCgpTcGVlY2hNb2RlEhsKF1NQRUVDSF9NT0RFX1VOU1BFQ0lGSUVEEAASFwoTU1BFRUNIX01PREVfV0hJU1BFUhABEhQKEFNQRUVDSF9NT0RFX1RBTEsQAhIUChBTUEVFQ0hfTU9ERV9ZRUxMEAMqOwoEVGlsZRIUChBUSUxFX1VOU1BFQ0lGSUVEEAASDgoKVElMRV9GTE9PUhABEg0KCVRJTEVfV0FMTBACKm0KDkNoYXJhY3RlclN0YXRlEh8KG0NIQVJBQ1RFUl9TVEFURV9VTlNQRUNJRklFRBAAEhkKFUNIQVJBQ1RFUl9TVEFURV9BV0FLRRABEh8KG0NIQVJBQ1RFUl9TVEFURV9VTkNPTlNDSU9VUxACQitaKWdseXBoL3NlcnZlci9pbnRlcm5hbC9wYi9nbHlwaC92MTtnbHlwaHYxYgZwcm90bzM");
 
 /**
  * Position is a tile coordinate. One tile is about 1 m.
@@ -159,6 +159,39 @@ export const DirectionSchema: GenEnum<Direction> = /*@__PURE__*/
   enumDesc(file_glyph_v1_world, 0);
 
 /**
+ * How loudly something is said (ADR 010). Each mode has its own range.
+ *
+ * @generated from enum glyph.v1.SpeechMode
+ */
+export enum SpeechMode {
+  /**
+   * @generated from enum value: SPEECH_MODE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: SPEECH_MODE_WHISPER = 1;
+   */
+  WHISPER = 1,
+
+  /**
+   * @generated from enum value: SPEECH_MODE_TALK = 2;
+   */
+  TALK = 2,
+
+  /**
+   * @generated from enum value: SPEECH_MODE_YELL = 3;
+   */
+  YELL = 3,
+}
+
+/**
+ * Describes the enum glyph.v1.SpeechMode.
+ */
+export const SpeechModeSchema: GenEnum<SpeechMode> = /*@__PURE__*/
+  enumDesc(file_glyph_v1_world, 1);
+
+/**
  * @generated from enum glyph.v1.Tile
  */
 export enum Tile {
@@ -182,7 +215,7 @@ export enum Tile {
  * Describes the enum glyph.v1.Tile.
  */
 export const TileSchema: GenEnum<Tile> = /*@__PURE__*/
-  enumDesc(file_glyph_v1_world, 1);
+  enumDesc(file_glyph_v1_world, 2);
 
 /**
  * @generated from enum glyph.v1.CharacterState
@@ -210,5 +243,5 @@ export enum CharacterState {
  * Describes the enum glyph.v1.CharacterState.
  */
 export const CharacterStateSchema: GenEnum<CharacterState> = /*@__PURE__*/
-  enumDesc(file_glyph_v1_world, 2);
+  enumDesc(file_glyph_v1_world, 3);
 

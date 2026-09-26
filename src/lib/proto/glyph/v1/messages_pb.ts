@@ -6,7 +6,7 @@ import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Ping, Pong } from "./ping_pb";
 import { file_glyph_v1_ping } from "./ping_pb";
-import type { Character, CharacterState, Direction, Position, Room } from "./world_pb";
+import type { Character, CharacterState, Direction, Position, Room, SpeechMode } from "./world_pb";
 import { file_glyph_v1_world } from "./world_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file glyph/v1/messages.proto.
  */
 export const file_glyph_v1_messages: GenFile = /*@__PURE__*/
-  fileDesc("ChdnbHlwaC92MS9tZXNzYWdlcy5wcm90bxIIZ2x5cGgudjEiegoNQ2xpZW50TWVzc2FnZRIeCgRwaW5nGAEgASgLMg4uZ2x5cGgudjEuUGluZ0gAEh4KBGpvaW4YAiABKAsyDi5nbHlwaC52MS5Kb2luSAASHgoEbW92ZRgDIAEoCzIOLmdseXBoLnYxLk1vdmVIAEIJCgdtZXNzYWdlIuMDCg1TZXJ2ZXJNZXNzYWdlEh4KBHBvbmcYASABKAsyDi5nbHlwaC52MS5Qb25nSAASMQoOd29ybGRfc25hcHNob3QYAiABKAsyFy5nbHlwaC52MS5Xb3JsZFNuYXBzaG90SAASOQoSY2hhcmFjdGVyX2FwcGVhcmVkGAMgASgLMhsuZ2x5cGgudjEuQ2hhcmFjdGVyQXBwZWFyZWRIABItCgxzdGVwX3N0YXJ0ZWQYBCABKAsyFS5nbHlwaC52MS5TdGVwU3RhcnRlZEgAEjMKD2NoYXJhY3Rlcl9tb3ZlZBgFIAEoCzIYLmdseXBoLnYxLkNoYXJhY3Rlck1vdmVkSAASQgoXY2hhcmFjdGVyX3N0YXRlX2NoYW5nZWQYBiABKAsyHy5nbHlwaC52MS5DaGFyYWN0ZXJTdGF0ZUNoYW5nZWRIABIxCg5jaGFyYWN0ZXJfbGVmdBgHIAEoCzIXLmdseXBoLnYxLkNoYXJhY3RlckxlZnRIABI1ChBjb21tYW5kX3JlamVjdGVkGAggASgLMhkuZ2x5cGgudjEuQ29tbWFuZFJlamVjdGVkSAASJwoJdGlja19zeW5jGAkgASgLMhIuZ2x5cGgudjEuVGlja1N5bmNIAEIJCgdtZXNzYWdlIhQKBEpvaW4SDAoEbmFtZRgBIAEoCSIuCgRNb3ZlEiYKCWRpcmVjdGlvbhgBIAEoDjITLmdseXBoLnYxLkRpcmVjdGlvbiJ/Cg1Xb3JsZFNuYXBzaG90EhkKEXlvdXJfY2hhcmFjdGVyX2lkGAEgASgNEgwKBHRpY2sYAiABKAQSHAoEcm9vbRgDIAEoCzIOLmdseXBoLnYxLlJvb20SJwoKY2hhcmFjdGVycxgEIAMoCzITLmdseXBoLnYxLkNoYXJhY3RlciI7ChFDaGFyYWN0ZXJBcHBlYXJlZBImCgljaGFyYWN0ZXIYASABKAsyEy5nbHlwaC52MS5DaGFyYWN0ZXIijgEKC1N0ZXBTdGFydGVkEhQKDGNoYXJhY3Rlcl9pZBgBIAEoDRIgCgRmcm9tGAIgASgLMhIuZ2x5cGgudjEuUG9zaXRpb24SHgoCdG8YAyABKAsyEi5nbHlwaC52MS5Qb3NpdGlvbhISCgpzdGFydF90aWNrGAQgASgEEhMKC2Fycml2ZV90aWNrGAUgASgEIloKDkNoYXJhY3Rlck1vdmVkEhQKDGNoYXJhY3Rlcl9pZBgBIAEoDRIkCghwb3NpdGlvbhgCIAEoCzISLmdseXBoLnYxLlBvc2l0aW9uEgwKBHRpY2sYAyABKAQiVgoVQ2hhcmFjdGVyU3RhdGVDaGFuZ2VkEhQKDGNoYXJhY3Rlcl9pZBgBIAEoDRInCgVzdGF0ZRgCIAEoDjIYLmdseXBoLnYxLkNoYXJhY3RlclN0YXRlIiUKDUNoYXJhY3RlckxlZnQSFAoMY2hhcmFjdGVyX2lkGAEgASgNIhgKCFRpY2tTeW5jEgwKBHRpY2sYASABKAQiIQoPQ29tbWFuZFJlamVjdGVkEg4KBnJlYXNvbhgBIAEoCUIrWilnbHlwaC9zZXJ2ZXIvaW50ZXJuYWwvcGIvZ2x5cGgvdjE7Z2x5cGh2MWIGcHJvdG8z", [file_glyph_v1_ping, file_glyph_v1_world]);
+  fileDesc("ChdnbHlwaC92MS9tZXNzYWdlcy5wcm90bxIIZ2x5cGgudjEimAEKDUNsaWVudE1lc3NhZ2USHgoEcGluZxgBIAEoCzIOLmdseXBoLnYxLlBpbmdIABIeCgRqb2luGAIgASgLMg4uZ2x5cGgudjEuSm9pbkgAEh4KBG1vdmUYAyABKAsyDi5nbHlwaC52MS5Nb3ZlSAASHAoDc2F5GAQgASgLMg0uZ2x5cGgudjEuU2F5SABCCQoHbWVzc2FnZSKFBAoNU2VydmVyTWVzc2FnZRIeCgRwb25nGAEgASgLMg4uZ2x5cGgudjEuUG9uZ0gAEjEKDndvcmxkX3NuYXBzaG90GAIgASgLMhcuZ2x5cGgudjEuV29ybGRTbmFwc2hvdEgAEjkKEmNoYXJhY3Rlcl9hcHBlYXJlZBgDIAEoCzIbLmdseXBoLnYxLkNoYXJhY3RlckFwcGVhcmVkSAASLQoMc3RlcF9zdGFydGVkGAQgASgLMhUuZ2x5cGgudjEuU3RlcFN0YXJ0ZWRIABIzCg9jaGFyYWN0ZXJfbW92ZWQYBSABKAsyGC5nbHlwaC52MS5DaGFyYWN0ZXJNb3ZlZEgAEkIKF2NoYXJhY3Rlcl9zdGF0ZV9jaGFuZ2VkGAYgASgLMh8uZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGVDaGFuZ2VkSAASMQoOY2hhcmFjdGVyX2xlZnQYByABKAsyFy5nbHlwaC52MS5DaGFyYWN0ZXJMZWZ0SAASNQoQY29tbWFuZF9yZWplY3RlZBgIIAEoCzIZLmdseXBoLnYxLkNvbW1hbmRSZWplY3RlZEgAEicKCXRpY2tfc3luYxgJIAEoCzISLmdseXBoLnYxLlRpY2tTeW5jSAASIAoFaGVhcmQYCiABKAsyDy5nbHlwaC52MS5IZWFyZEgAQgkKB21lc3NhZ2UiFAoESm9pbhIMCgRuYW1lGAEgASgJIi4KBE1vdmUSJgoJZGlyZWN0aW9uGAEgASgOMhMuZ2x5cGgudjEuRGlyZWN0aW9uIjcKA1NheRIiCgRtb2RlGAEgASgOMhQuZ2x5cGgudjEuU3BlZWNoTW9kZRIMCgR0ZXh0GAIgASgJIn8KDVdvcmxkU25hcHNob3QSGQoReW91cl9jaGFyYWN0ZXJfaWQYASABKA0SDAoEdGljaxgCIAEoBBIcCgRyb29tGAMgASgLMg4uZ2x5cGgudjEuUm9vbRInCgpjaGFyYWN0ZXJzGAQgAygLMhMuZ2x5cGgudjEuQ2hhcmFjdGVyIjsKEUNoYXJhY3RlckFwcGVhcmVkEiYKCWNoYXJhY3RlchgBIAEoCzITLmdseXBoLnYxLkNoYXJhY3RlciKOAQoLU3RlcFN0YXJ0ZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEiAKBGZyb20YAiABKAsyEi5nbHlwaC52MS5Qb3NpdGlvbhIeCgJ0bxgDIAEoCzISLmdseXBoLnYxLlBvc2l0aW9uEhIKCnN0YXJ0X3RpY2sYBCABKAQSEwoLYXJyaXZlX3RpY2sYBSABKAQiWgoOQ2hhcmFjdGVyTW92ZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEiQKCHBvc2l0aW9uGAIgASgLMhIuZ2x5cGgudjEuUG9zaXRpb24SDAoEdGljaxgDIAEoBCJWChVDaGFyYWN0ZXJTdGF0ZUNoYW5nZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEicKBXN0YXRlGAIgASgOMhguZ2x5cGgudjEuQ2hhcmFjdGVyU3RhdGUiJQoNQ2hhcmFjdGVyTGVmdBIUCgxjaGFyYWN0ZXJfaWQYASABKA0iGAoIVGlja1N5bmMSDAoEdGljaxgBIAEoBCJsCgVIZWFyZBISCgpzcGVha2VyX2lkGAEgASgNEiIKBG1vZGUYAiABKA4yFC5nbHlwaC52MS5TcGVlY2hNb2RlEgwKBHRleHQYAyABKAkSDwoHbXVmZmxlZBgEIAEoCBIMCgR0aWNrGAUgASgEIiEKD0NvbW1hbmRSZWplY3RlZBIOCgZyZWFzb24YASABKAlCK1opZ2x5cGgvc2VydmVyL2ludGVybmFsL3BiL2dseXBoL3YxO2dseXBodjFiBnByb3RvMw", [file_glyph_v1_ping, file_glyph_v1_world]);
 
 /**
  * ClientMessage is the envelope for everything a client sends.
@@ -44,6 +44,12 @@ export type ClientMessage = Message<"glyph.v1.ClientMessage"> & {
      */
     value: Move;
     case: "move";
+  } | {
+    /**
+     * @generated from field: glyph.v1.Say say = 4;
+     */
+    value: Say;
+    case: "say";
   } | { case: undefined; value?: undefined };
 };
 
@@ -118,6 +124,12 @@ export type ServerMessage = Message<"glyph.v1.ServerMessage"> & {
      */
     value: TickSync;
     case: "tickSync";
+  } | {
+    /**
+     * @generated from field: glyph.v1.Heard heard = 10;
+     */
+    value: Heard;
+    case: "heard";
   } | { case: undefined; value?: undefined };
 };
 
@@ -170,6 +182,31 @@ export const MoveSchema: GenMessage<Move> = /*@__PURE__*/
   messageDesc(file_glyph_v1_messages, 3);
 
 /**
+ * Say speaks aloud. If the voice budget is short, the line waits until it
+ * can be spoken (ADR 013), then reaches everyone in range at once (ADR 028).
+ *
+ * @generated from message glyph.v1.Say
+ */
+export type Say = Message<"glyph.v1.Say"> & {
+  /**
+   * @generated from field: glyph.v1.SpeechMode mode = 1;
+   */
+  mode: SpeechMode;
+
+  /**
+   * @generated from field: string text = 2;
+   */
+  text: string;
+};
+
+/**
+ * Describes the message glyph.v1.Say.
+ * Use `create(SaySchema)` to create a new message.
+ */
+export const SaySchema: GenMessage<Say> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_messages, 4);
+
+/**
  * WorldSnapshot is sent once after a successful join.
  *
  * @generated from message glyph.v1.WorldSnapshot
@@ -207,7 +244,7 @@ export type WorldSnapshot = Message<"glyph.v1.WorldSnapshot"> & {
  * Use `create(WorldSnapshotSchema)` to create a new message.
  */
 export const WorldSnapshotSchema: GenMessage<WorldSnapshot> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 4);
+  messageDesc(file_glyph_v1_messages, 5);
 
 /**
  * CharacterAppeared: a character came into view (joined or entered the room).
@@ -226,7 +263,7 @@ export type CharacterAppeared = Message<"glyph.v1.CharacterAppeared"> & {
  * Use `create(CharacterAppearedSchema)` to create a new message.
  */
 export const CharacterAppearedSchema: GenMessage<CharacterAppeared> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 5);
+  messageDesc(file_glyph_v1_messages, 6);
 
 /**
  * StepStarted: a character began a step. The position changes on arrive_tick,
@@ -266,7 +303,7 @@ export type StepStarted = Message<"glyph.v1.StepStarted"> & {
  * Use `create(StepStartedSchema)` to create a new message.
  */
 export const StepStartedSchema: GenMessage<StepStarted> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 6);
+  messageDesc(file_glyph_v1_messages, 7);
 
 /**
  * CharacterMoved: a character's position changed.
@@ -295,7 +332,7 @@ export type CharacterMoved = Message<"glyph.v1.CharacterMoved"> & {
  * Use `create(CharacterMovedSchema)` to create a new message.
  */
 export const CharacterMovedSchema: GenMessage<CharacterMoved> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 7);
+  messageDesc(file_glyph_v1_messages, 8);
 
 /**
  * @generated from message glyph.v1.CharacterStateChanged
@@ -317,7 +354,7 @@ export type CharacterStateChanged = Message<"glyph.v1.CharacterStateChanged"> & 
  * Use `create(CharacterStateChangedSchema)` to create a new message.
  */
 export const CharacterStateChangedSchema: GenMessage<CharacterStateChanged> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 8);
+  messageDesc(file_glyph_v1_messages, 9);
 
 /**
  * CharacterLeft: a character is no longer in view.
@@ -336,7 +373,7 @@ export type CharacterLeft = Message<"glyph.v1.CharacterLeft"> & {
  * Use `create(CharacterLeftSchema)` to create a new message.
  */
 export const CharacterLeftSchema: GenMessage<CharacterLeft> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 9);
+  messageDesc(file_glyph_v1_messages, 10);
 
 /**
  * TickSync carries the current server tick, sent to everyone once a second
@@ -357,7 +394,52 @@ export type TickSync = Message<"glyph.v1.TickSync"> & {
  * Use `create(TickSyncSchema)` to create a new message.
  */
 export const TickSyncSchema: GenMessage<TickSync> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 10);
+  messageDesc(file_glyph_v1_messages, 11);
+
+/**
+ * Heard: speech reached you. In the muffled band words are dropped, each run
+ * of dropped words replaced by "…" (ADR 010). A speaker hears their own line,
+ * clear, at the moment it is spoken.
+ *
+ * speaker_id is included because every speaker in range is visible. Once
+ * speech can come from someone the listener cannot see, it must be left out
+ * for that listener (ADR 029).
+ *
+ * @generated from message glyph.v1.Heard
+ */
+export type Heard = Message<"glyph.v1.Heard"> & {
+  /**
+   * @generated from field: uint32 speaker_id = 1;
+   */
+  speakerId: number;
+
+  /**
+   * @generated from field: glyph.v1.SpeechMode mode = 2;
+   */
+  mode: SpeechMode;
+
+  /**
+   * @generated from field: string text = 3;
+   */
+  text: string;
+
+  /**
+   * @generated from field: bool muffled = 4;
+   */
+  muffled: boolean;
+
+  /**
+   * @generated from field: uint64 tick = 5;
+   */
+  tick: bigint;
+};
+
+/**
+ * Describes the message glyph.v1.Heard.
+ * Use `create(HeardSchema)` to create a new message.
+ */
+export const HeardSchema: GenMessage<Heard> = /*@__PURE__*/
+  messageDesc(file_glyph_v1_messages, 12);
 
 /**
  * CommandRejected: the last command could not be carried out.
@@ -377,5 +459,5 @@ export type CommandRejected = Message<"glyph.v1.CommandRejected"> & {
  * Use `create(CommandRejectedSchema)` to create a new message.
  */
 export const CommandRejectedSchema: GenMessage<CommandRejected> = /*@__PURE__*/
-  messageDesc(file_glyph_v1_messages, 11);
+  messageDesc(file_glyph_v1_messages, 13);
 
