@@ -31,7 +31,7 @@ export class WorldRenderer {
 	readonly #tiles = new Graphics();
 	/** Faint outline of the tile your queued step heads for. */
 	readonly #queued = new Graphics();
-	readonly #bodies = new Container();
+	readonly #bodies = new Container({ sortableChildren: true });
 	/** Names, in unscaled physical pixels above the world. */
 	readonly #labels = new Container();
 	readonly #sprites = new Map<number, CharacterSprite>();
@@ -148,9 +148,10 @@ export class WorldRenderer {
 		for (const c of Object.values(characters)) {
 			let sprite = this.#sprites.get(c.id);
 			if (!sprite) {
-				sprite = new CharacterSprite(c, c.id === this.#game.myId, this.#bodies, this.#labels);
+				sprite = new CharacterSprite(c, this.#bodies, this.#labels);
 				this.#sprites.set(c.id, sprite);
 			}
+			sprite.draw(c, c.id === this.#game.myId);
 			const [x, y] = glidePosition(c, tickNow);
 			sprite.place(
 				this.#snap(x * TILE_SIZE),
