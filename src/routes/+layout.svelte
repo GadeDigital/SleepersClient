@@ -9,3 +9,13 @@
 </svelte:head>
 
 {@render children()}
+
+<style>
+	:global(html, body) {
+		margin: 0;
+		height: 100%;
+		background: #0e0f14;
+		color: #d8dae3;
+		font-family: system-ui, sans-serif;
+	}
+</style>
