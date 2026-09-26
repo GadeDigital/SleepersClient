@@ -2,6 +2,7 @@ import { Container, Graphics, TextureStyle, type Application } from 'pixi.js';
 import type { GameState } from '$lib/net/game-state.svelte';
 import { Tile, type Room } from '$lib/proto/glyph/v1/world_pb';
 import { CharacterSprite } from './character-sprite';
+import { glidePosition } from './glide';
 import { queuedTarget } from './move-input';
 import { TILE_SIZE, zoomFor } from './scale';
 
@@ -98,7 +99,7 @@ export class WorldRenderer {
 			Math.round((this.#app.screen.width - w) / 2),
 			Math.round((this.#app.screen.height - h) / 2)
 		);
-		this.#drawCharacters();
+		this.#drawCharacters(this.#game.clock.now(performance.now()));
 		this.#drawQueued();
 	};
 
@@ -112,8 +113,13 @@ export class WorldRenderer {
 		this.#queued.position.set(x * TILE_SIZE, y * TILE_SIZE);
 	}
 
-	/** Keeps one sprite per character in view, at the tile the server gave. */
-	#drawCharacters(): void {
+	/** Rounds an art-pixel coordinate to a whole physical pixel. */
+	#snap(v: number): number {
+		return Math.round(v * this.#zoom) / this.#zoom;
+	}
+
+	/** Keeps one sprite per character in view, gliding along any step. */
+	#drawCharacters(tickNow: number): void {
 		const characters = this.#game.characters;
 		for (const [id, sprite] of this.#sprites) {
 			if (!(id in characters)) {
@@ -127,9 +133,10 @@ export class WorldRenderer {
 				sprite = new CharacterSprite(c, c.id === this.#game.myId, this.#bodies, this.#labels);
 				this.#sprites.set(c.id, sprite);
 			}
+			const [x, y] = glidePosition(c, tickNow);
 			sprite.place(
-				c.x * TILE_SIZE,
-				c.y * TILE_SIZE,
+				this.#snap(x * TILE_SIZE),
+				this.#snap(y * TILE_SIZE),
 				this.#world.position,
 				this.#zoom,
 				this.#fontSize
