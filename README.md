@@ -12,6 +12,10 @@ npm run dev      # dev server at http://localhost:5173
 npm run proto    # regenerate src/lib/proto/ from ../glyph-server/proto/ (needs protoc)
 ```
 
+## Playing locally
+
+Run the server with `make dev` in `../glyph-server` (it accepts the dev server's origin, `localhost:5173`), then `npm run dev` here and open http://localhost:5173 in two windows. Move with WASD or the arrow keys (two held make a diagonal; Q/E/Z/C are diagonals too). Set `VITE_SERVER_URL` to use a server other than `ws://<this host>:8080/ws`.
+
 ## Checks
 
 ```sh
