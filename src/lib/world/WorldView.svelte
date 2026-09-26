@@ -1,13 +1,20 @@
 <script lang="ts">
 	import { Application } from 'pixi.js';
 	import type { Attachment } from 'svelte/attachments';
+	import type { GameState } from '$lib/net/game-state.svelte';
 	import { WorldRenderer } from './world-renderer';
 
+	interface Props {
+		game: GameState;
+	}
+
+	let { game }: Props = $props();
+
 	/** Runs Pixi on the canvas for as long as it is mounted. */
-	function pixi(): Attachment<HTMLCanvasElement> {
+	function pixi(g: GameState): Attachment<HTMLCanvasElement> {
 		return (canvas) => {
 			const app = new Application();
-			let renderer: WorldRenderer | null = null;
+			let renderer = $state.raw<WorldRenderer | null>(null);
 			let unmounted = false;
 
 			// init is async; the canvas may be unmounted before it finishes.
@@ -23,8 +30,13 @@
 				})
 				.then(() => {
 					if (unmounted) app.destroy();
-					else renderer = new WorldRenderer(app);
+					else renderer = new WorldRenderer(app, g);
 				});
+
+			// A snapshot replaces the room whole, so this runs once per snapshot.
+			$effect(() => {
+				renderer?.setRoom(g.room);
+			});
 
 			return () => {
 				unmounted = true;
@@ -38,7 +50,7 @@
 </script>
 
 <div class="world">
-	<canvas {@attach pixi()}></canvas>
+	<canvas {@attach pixi(game)}></canvas>
 </div>
 
 <style>

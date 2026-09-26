@@ -14,7 +14,7 @@
 </svelte:head>
 
 {#if connection.status === 'joined'}
-	<WorldView />
+	<WorldView game={connection.game} />
 {:else}
 	<NamePrompt
 		onjoin={(name) => connection.join(name)}
