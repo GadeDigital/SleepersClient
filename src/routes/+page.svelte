@@ -2,6 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import { Connection } from '$lib/net/connection.svelte';
 	import NamePrompt from '$lib/ui/NamePrompt.svelte';
+	import WorldView from '$lib/world/WorldView.svelte';
 
 	const connection = new Connection();
 
@@ -13,7 +14,7 @@
 </svelte:head>
 
 {#if connection.status === 'joined'}
-	<p>Joined as {connection.game.me?.name}.</p>
+	<WorldView />
 {:else}
 	<NamePrompt
 		onjoin={(name) => connection.join(name)}
