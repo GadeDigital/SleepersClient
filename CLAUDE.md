@@ -15,7 +15,7 @@ glyph/
 ```
 
 - **Work only in this repository** unless the task is tagged **[server]**. Tasks in the plan are tagged **[server]**, **[client]** or **[local]**.
-- You may read `../glyph-server/` to understand the server and the messages, but do not edit it from a **[client]** task.
+- You may read `../glyph-server/` to understand the server and the messages, but do not edit it from a **[client]** task, with one exception: the docs in `../glyph-server/docs/` (see "Keeping the docs up to date").
 - The client talks to the server only over a WebSocket, using messages defined in `../glyph-server/proto/`.
 
 ## Read these first
@@ -37,7 +37,7 @@ src/lib/proto/      TypeScript GENERATED from ../glyph-server/proto (committed, 
 ## Rules that must not be broken
 
 - **No game logic in the client** (ADR 002). The server decides everything: movement, speech ranges, what anyone can see or hear. The client renders what the server sends and sends player commands.
-- **Never hand-write a message type.** All message types come from `src/lib/proto/`, generated from `../glyph-server/proto/` with the project's generate command. If a message is missing or wrong, the fix starts in glyph-server as a **[server]** task.
+- **Never hand-write a message type.** All message types come from `src/lib/proto/`, generated from `../glyph-server/proto/` with `npm run proto`. If a message is missing or wrong, the fix starts in glyph-server as a **[server]** task.
 - **Svelte 5 with runes** (`$state`, `$derived`, `$effect`) for UI and reactive state.
 - **PixiJS draws the world view**, hosted in one Svelte component. Chat, inventory and menus are Svelte.
 - **Pixel-art rendering**: nearest-neighbour scaling, whole-number zoom levels only.
@@ -49,6 +49,14 @@ src/lib/proto/      TypeScript GENERATED from ../glyph-server/proto (committed, 
 - If a task needs a design decision that the docs don't cover, stop and ask.
 - If the client needs something the server doesn't provide yet, stop and say which **[server]** task is missing.
 - Keep dependencies few and well known. Ask before adding a new one.
+
+## Keeping the docs up to date
+
+`../glyph-server/docs/architecture.md` and `../glyph-server/docs/plan.md` are the master copies, and keeping them current is part of every task:
+
+- Tick the task in `plan.md` and update its milestone's status. A milestone is Done only when its "done when" check passes.
+- Record any design decision as a new ADR in `architecture.md`, with a changelog row (bump the version). Never edit an accepted ADR; supersede it with a new one.
+- These doc edits are the only changes a **[client]** task may make in glyph-server. Commit them in glyph-server, separately from the glyph-client commit.
 
 ## Environment
 
