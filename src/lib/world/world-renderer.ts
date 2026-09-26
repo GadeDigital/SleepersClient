@@ -1,7 +1,9 @@
 import { Container, Graphics, TextureStyle, type Application } from 'pixi.js';
 import type { GameState } from '$lib/net/game-state.svelte';
+import { ActionKind, type Direction } from '$lib/proto/glyph/v1/world_pb';
 import { CharacterSprite } from './character-sprite';
 import { drawChunk } from './chunk-layer';
+import { DELTAS } from './directions';
 import { glidePosition } from './glide';
 import { queuedTarget } from './move-input';
 import { TILE_SIZE, zoomFor } from './scale';
@@ -11,6 +13,18 @@ import { nearest } from './wrap';
 const LABEL_CSS_SIZE = 12;
 
 const QUEUED = 0xf2f2f2;
+
+/** What the player is aiming: an action, and the direction held, if any. */
+export interface Aim {
+	kind: ActionKind;
+	dir: Direction | null;
+}
+
+const AIM_COLOURS: Partial<Record<ActionKind, number>> = {
+	[ActionKind.DIG]: 0xe0a458,
+	[ActionKind.BUILD_WALL]: 0x7f8fd6,
+	[ActionKind.REMOVE_WALL]: 0xc9656f
+};
 
 // Pixel art: sample textures nearest-neighbour, never smoothed.
 TextureStyle.defaultOptions.scaleMode = 'nearest';
@@ -27,7 +41,10 @@ export class WorldRenderer {
 	readonly #world = new Container();
 	/** The ground: one layer per chunk held, by chunk key. */
 	readonly #ground = new Container();
-	readonly #chunkLayers = new Map<string, Graphics>();
+	readonly #chunkLayers = new Map<string, { layer: Graphics; version: number }>();
+	/** While aiming an action: the 8 neighbouring tiles, the aimed one bright. */
+	readonly #aim = new Graphics();
+	readonly #aiming: () => Aim | null;
 	/** The camera's centre column in tiles; may lie past the seam while gliding. */
 	#camX = 0;
 	/** Faint outline of the tile your queued step heads for. */
@@ -42,14 +59,19 @@ export class WorldRenderer {
 	#zoom = 1;
 	#fontSize = LABEL_CSS_SIZE;
 
-	constructor(app: Application, game: GameState) {
+	/**
+	 * aiming tells the renderer what action the player is aiming, if any;
+	 * it is read every frame.
+	 */
+	constructor(app: Application, game: GameState, aiming: () => Aim | null = () => null) {
 		this.#app = app;
 		this.#game = game;
+		this.#aiming = aiming;
 		this.#queued
 			.rect(0, 0, TILE_SIZE, TILE_SIZE)
 			.stroke({ color: QUEUED, width: 1, alignment: 1, alpha: 0.35 });
 		this.#queued.visible = false;
-		this.#world.addChild(this.#ground, this.#queued, this.#bodies);
+		this.#world.addChild(this.#ground, this.#queued, this.#aim, this.#bodies);
 		app.stage.addChild(this.#world, this.#labels);
 		app.ticker.add(this.#frame);
 	}
@@ -82,7 +104,33 @@ export class WorldRenderer {
 		this.#drawCharacters(tickNow, nowMs);
 		this.#showNewLines(nowMs);
 		this.#drawQueued();
+		this.#drawAim(tickNow);
 	};
+
+	/** Outlines the tiles an action could be aimed at, and the aimed one. */
+	#drawAim(tickNow: number): void {
+		const aim = this.#aiming();
+		const me = this.#game.me;
+		this.#aim.clear();
+		if (!aim || !me) return;
+		const [mx, my] = glidePosition(me, tickNow, this.#wrapWidth());
+		const colour = AIM_COLOURS[aim.kind] ?? QUEUED;
+		const [ax, ay] = aim.dir === null ? [0, 0] : DELTAS[aim.dir];
+		for (let dy = -1; dy <= 1; dy++) {
+			for (let dx = -1; dx <= 1; dx++) {
+				if (dx === 0 && dy === 0) continue;
+				const aimed = aim.dir !== null && dx === ax && dy === ay;
+				this.#aim
+					.rect(
+						this.#snap((this.#nearX(Math.round(mx)) + dx) * TILE_SIZE),
+						this.#snap((Math.round(my) + dy) * TILE_SIZE),
+						TILE_SIZE,
+						TILE_SIZE
+					)
+					.stroke({ color: colour, width: 1, alignment: 1, alpha: aimed ? 1 : 0.3 });
+			}
+		}
+	}
 
 	/** Puts each line heard since the last frame over its speaker. */
 	#showNewLines(nowMs: number): void {
@@ -139,17 +187,19 @@ export class WorldRenderer {
 	#drawGround(): void {
 		const chunks = this.#game.chunks;
 		const size = this.#game.map?.chunkSize ?? 32;
-		for (const [key, layer] of this.#chunkLayers) {
-			if (!chunks.has(key)) {
-				layer.destroy();
+		for (const [key, drawn] of this.#chunkLayers) {
+			const chunk = chunks.get(key);
+			// Gone, or changed since it was drawn: drop the old layer.
+			if (!chunk || chunk.version !== drawn.version) {
+				drawn.layer.destroy();
 				this.#chunkLayers.delete(key);
 			}
 		}
 		for (const [key, chunk] of chunks) {
-			let layer = this.#chunkLayers.get(key);
+			let layer = this.#chunkLayers.get(key)?.layer;
 			if (!layer) {
 				layer = drawChunk(chunk, size, this.#game.tileTypes);
-				this.#chunkLayers.set(key, layer);
+				this.#chunkLayers.set(key, { layer, version: chunk.version });
 				this.#ground.addChild(layer);
 			}
 			// The chunk's centre decides which copy is nearest.
@@ -189,6 +239,12 @@ export class WorldRenderer {
 				this.#sprites.set(c.id, sprite);
 			}
 			sprite.draw(c, c.id === this.#game.myId);
+			const a = c.action;
+			sprite.setProgress(
+				a && tickNow >= a.startTick && tickNow < a.endTick
+					? (tickNow - a.startTick) / (a.endTick - a.startTick)
+					: null
+			);
 			const [gx, y] = glidePosition(c, tickNow, this.#wrapWidth());
 			const x = this.#nearX(gx);
 			sprite.place(

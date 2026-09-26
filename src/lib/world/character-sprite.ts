@@ -16,6 +16,9 @@ const LYING_W = 13;
 const LYING_H = 6;
 const LYING_ALPHA = 0.45;
 const LYING_LABEL_ALPHA = 0.5;
+/** The action progress bar, in art pixels. */
+const PROGRESS_W = 14;
+const PROGRESS = 0xe0a458;
 
 /**
  * One character's placeholder: a coloured body in the world layer, and its
@@ -23,6 +26,8 @@ const LYING_LABEL_ALPHA = 0.5;
  */
 export class CharacterSprite {
 	readonly body = new Graphics();
+	/** How far an action under way has got, drawn over the body. */
+	readonly progress = new Graphics();
 	readonly label: Text;
 	/** The latest line the character said, above the name. */
 	readonly bubble: SpeechBubble;
@@ -30,9 +35,13 @@ export class CharacterSprite {
 	#drawn: { unconscious: boolean; isYou: boolean } | null = null;
 	/** Top of the body in art pixels within its tile; the name sits above it. */
 	#top = 0;
+	/** The progress bar's filled width last drawn, in art pixels; -1 if hidden. */
+	#progressDrawn = -1;
 
 	constructor(c: CharacterView, bodies: Container, labels: Container) {
 		bodies.addChild(this.body);
+		this.progress.zIndex = 2; // over every body
+		bodies.addChild(this.progress);
 		this.label = new Text({
 			text: c.name,
 			style: {
@@ -83,6 +92,7 @@ export class CharacterSprite {
 		nowMs: number
 	) {
 		this.body.position.set(x, y);
+		this.progress.position.set(x, y);
 		if (this.label.style.fontSize !== fontSize) this.label.style.fontSize = fontSize;
 		this.label.position.set(
 			Math.round(origin.x + (x + TILE_SIZE / 2) * zoom),
@@ -92,7 +102,26 @@ export class CharacterSprite {
 		this.bubble.place(this.label.x, this.label.y - this.label.height - gap, nowMs, fontSize);
 	}
 
+	/**
+	 * Shows an action's progress, 0 to 1, as a bar just below the character's
+	 * tile, clear of the name above; null hides it. Redrawn only when the bar
+	 * grows by a whole art pixel.
+	 */
+	setProgress(fraction: number | null): void {
+		const width =
+			fraction === null ? -1 : Math.round(Math.min(1, Math.max(0, fraction)) * PROGRESS_W);
+		if (width === this.#progressDrawn) return;
+		this.#progressDrawn = width;
+		this.progress.clear();
+		if (width < 0) return;
+		const x = (TILE_SIZE - PROGRESS_W) / 2;
+		const y = TILE_SIZE + 1;
+		this.progress.rect(x - 1, y - 1, PROGRESS_W + 2, 4).fill(OUTLINE);
+		if (width > 0) this.progress.rect(x, y, width, 2).fill(PROGRESS);
+	}
+
 	destroy(): void {
+		this.progress.destroy();
 		this.body.destroy();
 		this.label.destroy();
 		this.bubble.destroy();

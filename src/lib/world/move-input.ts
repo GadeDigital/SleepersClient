@@ -1,4 +1,4 @@
-import type { Direction } from '$lib/proto/glyph/v1/world_pb';
+import { ActionKind, type Direction } from '$lib/proto/glyph/v1/world_pb';
 import type { GameState } from '$lib/net/game-state.svelte';
 import { DELTAS, directionOf } from './directions';
 
@@ -32,14 +32,29 @@ const LEAD_TICKS = 2;
  */
 const RETRY_TICKS = 5;
 
+/** Keys that start aiming an action (ADR 039). */
+const ACTION_KEYS: Record<string, ActionKind> = {
+	KeyG: ActionKind.DIG,
+	KeyB: ActionKind.BUILD_WALL,
+	KeyX: ActionKind.REMOVE_WALL
+};
+
 /**
- * Turns held keys into move commands. It only asks: the server decides
- * whether each step happens (ADR 002).
+ * Turns held keys into move and action commands. It only asks: the server
+ * decides whether each step or action happens (ADR 002).
+ *
+ * G, B or X starts aiming an action; while aiming, direction keys choose the
+ * adjacent tile instead of walking, and releasing them sends the action at
+ * the tile aimed at. The same key again, or Escape, stops aiming.
  */
 export class MoveInput {
 	readonly #held = new Set<string>();
 	readonly #game: GameState;
 	readonly #move: (dir: Direction) => void;
+	readonly #act: (kind: ActionKind, dir: Direction) => void;
+	readonly #onAiming: (kind: ActionKind | null) => void;
+	/** The action being aimed, or null when walking. */
+	#aiming: ActionKind | null = null;
 	/** The step a follow-up was already sent for, by its start tick. */
 	#followedStep = -1;
 	/** The latest estimated tick seen by update. */
@@ -47,9 +62,27 @@ export class MoveInput {
 	/** When the last command was sent, in estimated ticks. */
 	#sentTick = -Infinity;
 
-	constructor(game: GameState, move: (dir: Direction) => void) {
+	constructor(
+		game: GameState,
+		move: (dir: Direction) => void,
+		act: (kind: ActionKind, dir: Direction) => void = () => {},
+		onAiming: (kind: ActionKind | null) => void = () => {}
+	) {
 		this.#game = game;
 		this.#move = move;
+		this.#act = act;
+		this.#onAiming = onAiming;
+	}
+
+	/** The action being aimed, or null. */
+	get aiming(): ActionKind | null {
+		return this.#aiming;
+	}
+
+	#setAiming(kind: ActionKind | null): void {
+		this.#aiming = kind;
+		this.#held.clear();
+		this.#onAiming(kind);
 	}
 
 	/** The direction the held keys point, or null. */
@@ -63,10 +96,22 @@ export class MoveInput {
 		return directionOf(dx, dy);
 	}
 
-	/** Returns true if the key is a movement key, so the page should not scroll. */
+	/** Returns true if the key is one of ours, so the page should ignore it. */
 	keydown(code: string, repeat: boolean): boolean {
+		if (code in ACTION_KEYS) {
+			if (!repeat) this.#setAiming(this.#aiming === ACTION_KEYS[code] ? null : ACTION_KEYS[code]);
+			return true;
+		}
+		if (code === 'Escape' && this.#aiming !== null) {
+			this.#setAiming(null);
+			return true;
+		}
 		if (!(code in KEYS)) return false;
 		if (repeat) return true;
+		if (this.#aiming !== null) {
+			this.#held.add(code); // aim only; the action goes on release
+			return true;
+		}
 		const before = this.direction;
 		this.#held.add(code);
 		const dir = this.direction;
@@ -77,17 +122,28 @@ export class MoveInput {
 	}
 
 	keyup(code: string): void {
+		if (this.#aiming !== null && this.#held.has(code)) {
+			// Two keys held for a diagonal are rarely released together: the
+			// first release sends the action at the direction aimed just then.
+			const dir = this.direction;
+			const kind = this.#aiming;
+			this.#setAiming(null);
+			if (dir !== null) this.#act(kind, dir);
+			return;
+		}
 		this.#held.delete(code);
 	}
 
 	/** Forget held keys, as when the window loses focus. */
 	release(): void {
 		this.#held.clear();
+		if (this.#aiming !== null) this.#setAiming(null);
 	}
 
 	/** Called every frame: keeps walking while a key is held. */
 	update(tickNow: number): void {
 		this.#tick = tickNow;
+		if (this.#aiming !== null) return;
 		const dir = this.direction;
 		if (dir === null || this.#game.pendingMove !== null) return;
 		const step = this.#game.me?.step;

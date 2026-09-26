@@ -9,7 +9,8 @@ const standing: CharacterView = {
 	x: 1,
 	y: 1,
 	state: CharacterState.AWAKE,
-	step: null
+	step: null,
+	action: null
 };
 const stepping: CharacterView = {
 	...standing,

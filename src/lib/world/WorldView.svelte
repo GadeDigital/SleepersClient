@@ -3,7 +3,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { on } from 'svelte/events';
 	import type { GameState } from '$lib/net/game-state.svelte';
-	import type { Direction } from '$lib/proto/glyph/v1/world_pb';
+	import type { ActionKind, Direction } from '$lib/proto/glyph/v1/world_pb';
 	import { MoveInput } from './move-input';
 	import { WorldRenderer } from './world-renderer';
 
@@ -11,15 +11,24 @@
 		game: GameState;
 		/** Asks the server for one step. */
 		onmove: (direction: Direction) => void;
+		/** Asks the server for an action on an adjacent tile. */
+		onact: (kind: ActionKind, direction: Direction) => void;
+		/** Tells the page which action is being aimed, if any. */
+		onaiming: (kind: ActionKind | null) => void;
 	}
 
-	let { game, onmove }: Props = $props();
+	let { game, onmove, onact, onaiming }: Props = $props();
 
-	/** Runs Pixi on the canvas, and the movement keys, for as long as it is mounted. */
-	function pixi(g: GameState, move: (direction: Direction) => void): Attachment<HTMLCanvasElement> {
+	/** Runs Pixi on the canvas, and the movement and action keys, for as long as it is mounted. */
+	function pixi(
+		g: GameState,
+		move: (direction: Direction) => void,
+		act: (kind: ActionKind, direction: Direction) => void,
+		aiming: (kind: ActionKind | null) => void
+	): Attachment<HTMLCanvasElement> {
 		return (canvas) => {
 			const app = new Application();
-			const input = new MoveInput(g, move);
+			const input = new MoveInput(g, move, act, aiming);
 			const followUp = () => input.update(g.clock.now(performance.now()));
 			let renderer = $state.raw<WorldRenderer | null>(null);
 			let unmounted = false;
@@ -41,7 +50,9 @@
 						app.destroy();
 						return;
 					}
-					renderer = new WorldRenderer(app, g);
+					renderer = new WorldRenderer(app, g, () =>
+						input.aiming === null ? null : { kind: input.aiming, dir: input.direction }
+					);
 					app.ticker.add(followUp);
 				});
 
@@ -102,7 +113,7 @@
 </script>
 
 <div class="world">
-	<canvas {@attach pixi(game, onmove)}></canvas>
+	<canvas {@attach pixi(game, onmove, onact, onaiming)}></canvas>
 </div>
 
 <style>

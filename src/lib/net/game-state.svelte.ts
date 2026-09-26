@@ -3,6 +3,7 @@ import {
 	CharacterState,
 	type Character,
 	type Direction,
+	type ActionKind,
 	type MapInfo,
 	type TileType,
 	type SpeechMode
@@ -30,6 +31,17 @@ export interface Chunk {
 	cx: number;
 	cy: number;
 	tiles: Uint16Array;
+	/** Counts changes since the chunk arrived, so the renderer redraws it. */
+	version: number;
+}
+
+/** An action under way, as announced by ActionStarted (ADR 039). */
+export interface ActionView {
+	kind: ActionKind;
+	targetX: number;
+	targetY: number;
+	startTick: number;
+	endTick: number;
 }
 
 export function chunkKey(cx: number, cy: number): string {
@@ -68,6 +80,7 @@ export interface CharacterView {
 	y: number;
 	state: CharacterState;
 	step: Step | null;
+	action: ActionView | null;
 }
 
 /**
@@ -99,6 +112,8 @@ export class GameState {
 	pendingMove = $state<Direction | null>(null);
 	/** The server's reason for refusing the last command, if any. */
 	rejection = $state<string | null>(null);
+	/** Counts refusals, so the same reason twice still shows twice. */
+	rejections = $state(0);
 	/**
 	 * Lines sent but not yet spoken, oldest first: they wait for the voice
 	 * budget on the server (ADR 013). The server speaks them in order, so each
@@ -195,8 +210,34 @@ export class GameState {
 				this.chunks.set(chunkKey(d.cx, d.cy), {
 					cx: d.cx,
 					cy: d.cy,
-					tiles: Uint16Array.from(d.tiles)
+					tiles: Uint16Array.from(d.tiles),
+					version: 0
 				});
+				break;
+			}
+			case 'tileChanged': {
+				const size = this.map?.chunkSize ?? 32;
+				const x = m.value.position?.x ?? 0;
+				const y = m.value.position?.y ?? 0;
+				const chunk = this.chunks.get(chunkKey(Math.floor(x / size), Math.floor(y / size)));
+				if (chunk) {
+					chunk.tiles[(y % size) * size + (x % size)] = m.value.tileId;
+					chunk.version++;
+				}
+				break;
+			}
+			case 'actionStarted': {
+				const a = m.value;
+				const c = this.characters[a.characterId];
+				if (c) {
+					c.action = {
+						kind: a.kind,
+						targetX: a.target?.x ?? c.x,
+						targetY: a.target?.y ?? c.y,
+						startTick: Number(a.startTick),
+						endTick: Number(a.endTick)
+					};
+				}
 				break;
 			}
 			case 'chunkUnloaded':
@@ -215,6 +256,7 @@ export class GameState {
 			case 'commandRejected':
 				this.pendingMove = null;
 				this.rejection = m.value.reason;
+				this.rejections++;
 				break;
 		}
 	}
@@ -227,7 +269,8 @@ function view(c: Character): CharacterView {
 		x: c.position?.x ?? 0,
 		y: c.position?.y ?? 0,
 		state: c.state,
-		step: null
+		step: null,
+		action: null
 	};
 }
 

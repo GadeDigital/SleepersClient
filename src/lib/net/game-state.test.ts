@@ -1,7 +1,7 @@
 import { create, type MessageInitShape } from '@bufbuild/protobuf';
 import { describe, expect, it } from 'vitest';
 import { ServerMessageSchema } from '$lib/proto/glyph/v1/messages_pb';
-import { CharacterState, Direction, SpeechMode } from '$lib/proto/glyph/v1/world_pb';
+import { ActionKind, CharacterState, Direction, SpeechMode } from '$lib/proto/glyph/v1/world_pb';
 import { GameState, LOG_LIMIT } from './game-state.svelte';
 
 function msg(init: MessageInitShape<typeof ServerMessageSchema>) {
@@ -176,5 +176,53 @@ describe('GameState', () => {
 
 		game.apply(msg({ message: { case: 'chunkUnloaded', value: { cx: 0, cy: 0 } } }), 0);
 		expect([...game.chunks.keys()]).toEqual(['1,0']);
+	});
+
+	it('applies changed tiles and tracks actions under way', () => {
+		const game = joined();
+		game.apply(
+			msg({
+				message: {
+					case: 'chunkData',
+					value: { map: { address: 'g/test' }, cx: 1, cy: 0, tiles: new Array(32 * 32).fill(4) }
+				}
+			}),
+			0
+		);
+		game.apply(
+			msg({
+				message: {
+					case: 'tileChanged',
+					value: { map: { address: 'g/test' }, position: { x: 33, y: 2 }, tileId: 9 }
+				}
+			}),
+			0
+		);
+		const chunk = game.chunks.get('1,0');
+		expect(chunk?.tiles[2 * 32 + 1]).toBe(9);
+		expect(chunk?.version).toBe(1);
+
+		game.apply(
+			msg({
+				message: {
+					case: 'actionStarted',
+					value: {
+						characterId: 2,
+						kind: ActionKind.DIG,
+						target: { x: 3, y: 1 },
+						startTick: 40n,
+						endTick: 70n
+					}
+				}
+			}),
+			0
+		);
+		expect(game.characters[2].action).toEqual({
+			kind: ActionKind.DIG,
+			targetX: 3,
+			targetY: 1,
+			startTick: 40,
+			endTick: 70
+		});
 	});
 });
