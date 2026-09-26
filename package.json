@@ -13,9 +13,11 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "npm run test:unit -- --run",
+		"proto": "mkdir -p src/lib/proto && find src/lib/proto -name '*_pb.ts' -delete && protoc -I ../glyph-server/proto --es_out=src/lib/proto --es_opt=target=ts $(find ../glyph-server/proto -name '*.proto')"
 	},
 	"devDependencies": {
+		"@bufbuild/protoc-gen-es": "2.15.0",
 		"@eslint/js": "^10.0.1",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.63.0",
@@ -36,5 +38,8 @@
 		"vite": "^8.0.16",
 		"vitest": "^4.1.8",
 		"vitest-browser-svelte": "^2.1.1"
+	},
+	"dependencies": {
+		"@bufbuild/protobuf": "2.15.0"
 	}
 }

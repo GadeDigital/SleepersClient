@@ -9,6 +9,7 @@ The server, message schema and design docs live in the sibling repository `../gl
 ```sh
 npm install
 npm run dev      # dev server at http://localhost:5173
+npm run proto    # regenerate src/lib/proto/ from ../glyph-server/proto/ (needs protoc)
 ```
 
 ## Checks
