@@ -4,7 +4,7 @@ import {
 	ServerMessageSchema,
 	type ClientMessage
 } from '$lib/proto/glyph/v1/messages_pb';
-import type { Direction } from '$lib/proto/glyph/v1/world_pb';
+import type { Direction, SpeechMode } from '$lib/proto/glyph/v1/world_pb';
 import { GameState } from './game-state.svelte';
 
 export type Status = 'idle' | 'connecting' | 'joined' | 'closed';
@@ -71,6 +71,13 @@ export class Connection {
 		if (this.status !== 'joined') return;
 		this.game.pendingMove = direction;
 		this.#send({ message: { case: 'move', value: { direction } } });
+	}
+
+	/** Asks to say a line aloud; it may wait for the voice budget. */
+	say(mode: SpeechMode, text: string): void {
+		if (this.status !== 'joined') return;
+		this.game.unspoken.push({ mode, text });
+		this.#send({ message: { case: 'say', value: { mode, text } } });
 	}
 
 	close(): void {

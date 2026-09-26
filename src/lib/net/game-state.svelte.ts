@@ -3,7 +3,8 @@ import {
 	CharacterState,
 	type Character,
 	type Direction,
-	type Room
+	type Room,
+	type SpeechMode
 } from '$lib/proto/glyph/v1/world_pb';
 import { TickClock } from './tick-clock';
 
@@ -15,6 +16,12 @@ export interface Step {
 	toY: number;
 	startTick: number;
 	arriveTick: number;
+}
+
+/** A line you asked to say that the server has not spoken yet. */
+export interface UnspokenLine {
+	mode: SpeechMode;
+	text: string;
 }
 
 /** What the client knows about one character: only what the server said. */
@@ -45,6 +52,12 @@ export class GameState {
 	pendingMove = $state<Direction | null>(null);
 	/** The server's reason for refusing the last command, if any. */
 	rejection = $state<string | null>(null);
+	/**
+	 * Lines sent but not yet spoken, oldest first: they wait for the voice
+	 * budget on the server (ADR 013). The server speaks them in order, so each
+	 * of your own Heard lines is the oldest one here.
+	 */
+	unspoken = $state<UnspokenLine[]>([]);
 
 	/** Not reactive: read every frame by the renderer. */
 	readonly clock = new TickClock();
@@ -104,6 +117,9 @@ export class GameState {
 			}
 			case 'characterLeft':
 				delete this.characters[m.value.characterId];
+				break;
+			case 'heard':
+				if (m.value.speakerId === this.myId) this.unspoken.shift();
 				break;
 			case 'tickSync':
 				this.clock.sample(Number(m.value.tick), nowMs);
