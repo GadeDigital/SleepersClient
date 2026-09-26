@@ -1,19 +1,26 @@
 <script lang="ts">
 	import { Application } from 'pixi.js';
 	import type { Attachment } from 'svelte/attachments';
+	import { on } from 'svelte/events';
 	import type { GameState } from '$lib/net/game-state.svelte';
+	import type { Direction } from '$lib/proto/glyph/v1/world_pb';
+	import { MoveInput } from './move-input';
 	import { WorldRenderer } from './world-renderer';
 
 	interface Props {
 		game: GameState;
+		/** Asks the server for one step. */
+		onmove: (direction: Direction) => void;
 	}
 
-	let { game }: Props = $props();
+	let { game, onmove }: Props = $props();
 
-	/** Runs Pixi on the canvas for as long as it is mounted. */
-	function pixi(g: GameState): Attachment<HTMLCanvasElement> {
+	/** Runs Pixi on the canvas, and the movement keys, for as long as it is mounted. */
+	function pixi(g: GameState, move: (direction: Direction) => void): Attachment<HTMLCanvasElement> {
 		return (canvas) => {
 			const app = new Application();
+			const input = new MoveInput(g, move);
+			const followUp = () => input.update(g.clock.now(performance.now()));
 			let renderer = $state.raw<WorldRenderer | null>(null);
 			let unmounted = false;
 
@@ -30,9 +37,26 @@
 					resolution: 1
 				})
 				.then(() => {
-					if (unmounted) app.destroy();
-					else renderer = new WorldRenderer(app, g);
+					if (unmounted) {
+						app.destroy();
+						return;
+					}
+					renderer = new WorldRenderer(app, g);
+					app.ticker.add(followUp);
 				});
+
+			// Movement keys, ignored while typing or with a modifier so browser
+			// shortcuts such as Ctrl+W keep working.
+			const typing = (e: KeyboardEvent) =>
+				e.ctrlKey ||
+				e.metaKey ||
+				e.altKey ||
+				(e.target instanceof HTMLElement && e.target.closest('input, textarea') !== null);
+			const offKeydown = on(window, 'keydown', (e) => {
+				if (!typing(e) && input.keydown(e.code, e.repeat)) e.preventDefault();
+			});
+			const offKeyup = on(window, 'keyup', (e) => input.keyup(e.code));
+			const offBlur = on(window, 'blur', () => input.release());
 
 			// The canvas's exact size in physical pixels. When the backing store
 			// matches device-pixel-content-box, the browser draws the canvas 1:1
@@ -67,9 +91,13 @@
 			});
 
 			return () => {
+				offKeydown();
+				offKeyup();
+				offBlur();
 				observer.disconnect();
 				unmounted = true;
 				if (renderer) {
+					app.ticker.remove(followUp);
 					renderer.destroy();
 					app.destroy();
 				}
@@ -79,7 +107,7 @@
 </script>
 
 <div class="world">
-	<canvas {@attach pixi(game)}></canvas>
+	<canvas {@attach pixi(game, onmove)}></canvas>
 </div>
 
 <style>

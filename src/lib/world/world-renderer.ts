@@ -2,6 +2,7 @@ import { Container, Graphics, TextureStyle, type Application } from 'pixi.js';
 import type { GameState } from '$lib/net/game-state.svelte';
 import { Tile, type Room } from '$lib/proto/glyph/v1/world_pb';
 import { CharacterSprite } from './character-sprite';
+import { queuedTarget } from './move-input';
 import { TILE_SIZE, zoomFor } from './scale';
 
 /** Name label size in CSS pixels. */
@@ -11,6 +12,7 @@ const FLOOR = 0x2a2d3a;
 const FLOOR_EDGE = 0x24262f;
 const WALL = 0x6b6f80;
 const UNKNOWN = 0xff00ff;
+const QUEUED = 0xf2f2f2;
 
 // Pixel art: sample textures nearest-neighbour, never smoothed.
 TextureStyle.defaultOptions.scaleMode = 'nearest';
@@ -26,6 +28,8 @@ export class WorldRenderer {
 	/** Everything in world coordinates, in art pixels; the camera moves and scales it. */
 	readonly #world = new Container();
 	readonly #tiles = new Graphics();
+	/** Faint outline of the tile your queued step heads for. */
+	readonly #queued = new Graphics();
 	readonly #bodies = new Container();
 	/** Names, in unscaled physical pixels above the world. */
 	readonly #labels = new Container();
@@ -37,7 +41,11 @@ export class WorldRenderer {
 	constructor(app: Application, game: GameState) {
 		this.#app = app;
 		this.#game = game;
-		this.#world.addChild(this.#tiles, this.#bodies);
+		this.#queued
+			.rect(0, 0, TILE_SIZE, TILE_SIZE)
+			.stroke({ color: QUEUED, width: 1, alignment: 1, alpha: 0.35 });
+		this.#queued.visible = false;
+		this.#world.addChild(this.#tiles, this.#queued, this.#bodies);
 		app.stage.addChild(this.#world, this.#labels);
 		app.ticker.add(this.#frame);
 	}
@@ -91,7 +99,18 @@ export class WorldRenderer {
 			Math.round((this.#app.screen.height - h) / 2)
 		);
 		this.#drawCharacters();
+		this.#drawQueued();
 	};
+
+	/** Shows the move you sent while stepping, which the server holds as queued. */
+	#drawQueued(): void {
+		const me = this.#game.me;
+		const dir = this.#game.pendingMove;
+		this.#queued.visible = !!(me?.step && dir !== null);
+		if (!me?.step || dir === null) return;
+		const [x, y] = queuedTarget(me.step.toX, me.step.toY, dir);
+		this.#queued.position.set(x * TILE_SIZE, y * TILE_SIZE);
+	}
 
 	/** Keeps one sprite per character in view, at the tile the server gave. */
 	#drawCharacters(): void {
