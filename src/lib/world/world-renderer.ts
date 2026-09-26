@@ -1,4 +1,4 @@
-import { Container, Graphics, type Application } from 'pixi.js';
+import { Container, Graphics, TextureStyle, type Application } from 'pixi.js';
 import type { GameState } from '$lib/net/game-state.svelte';
 import { Tile, type Room } from '$lib/proto/glyph/v1/world_pb';
 
@@ -8,13 +8,25 @@ import { Tile, type Room } from '$lib/proto/glyph/v1/world_pb';
  */
 export const TILE_SIZE = 16;
 
-/** Placeholder zoom: screen pixels per art pixel. */
-const ZOOM = 3;
+/**
+ * How large one art pixel should look, in CSS pixels. The actual zoom is the
+ * nearest whole number of physical pixels to this, so every art pixel covers
+ * the same square of screen pixels at any browser zoom or display density.
+ */
+const TARGET_CSS_ZOOM = 3;
+
+/** Physical pixels per art pixel for a devicePixelRatio: a whole number, at least 1. */
+export function zoomFor(devicePixelRatio: number): number {
+	return Math.max(1, Math.round(TARGET_CSS_ZOOM * devicePixelRatio));
+}
 
 const FLOOR = 0x2a2d3a;
 const FLOOR_EDGE = 0x24262f;
 const WALL = 0x6b6f80;
 const UNKNOWN = 0xff00ff;
+
+// Pixel art: sample textures nearest-neighbour, never smoothed.
+TextureStyle.defaultOptions.scaleMode = 'nearest';
 
 /**
  * Owns the Pixi scene for the world view. It draws what the game state holds
@@ -27,6 +39,8 @@ export class WorldRenderer {
 	/** Everything in world coordinates, in art pixels; the camera moves and scales it. */
 	readonly #world = new Container();
 	readonly #tiles = new Graphics();
+	/** Physical pixels per art pixel. */
+	#zoom = 1;
 
 	constructor(app: Application, game: GameState) {
 		this.#app = app;
@@ -34,6 +48,16 @@ export class WorldRenderer {
 		this.#world.addChild(this.#tiles);
 		app.stage.addChild(this.#world);
 		app.ticker.add(this.#frame);
+	}
+
+	/**
+	 * Sizes the canvas in physical pixels. The stage works in physical pixels
+	 * too (renderer resolution 1), so whole-number positions and zoom land
+	 * exactly on the screen's pixel grid.
+	 */
+	resize(width: number, height: number, devicePixelRatio: number): void {
+		this.#app.renderer.resize(width, height);
+		this.#zoom = zoomFor(devicePixelRatio);
 	}
 
 	/** Redraws the tile layer. Called when the snapshot brings a new room. */
@@ -64,9 +88,9 @@ export class WorldRenderer {
 	#frame = (): void => {
 		// Until the camera follows a character, centre the room.
 		const room = this.#game.room;
-		const w = (room?.width ?? 0) * TILE_SIZE * ZOOM;
-		const h = (room?.height ?? 0) * TILE_SIZE * ZOOM;
-		this.#world.scale.set(ZOOM);
+		const w = (room?.width ?? 0) * TILE_SIZE * this.#zoom;
+		const h = (room?.height ?? 0) * TILE_SIZE * this.#zoom;
+		this.#world.scale.set(this.#zoom);
 		this.#world.position.set(
 			Math.round((this.#app.screen.width - w) / 2),
 			Math.round((this.#app.screen.height - h) / 2)
