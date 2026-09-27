@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GameState } from '$lib/net/game-state.svelte';
-import { ActionKind, CharacterState, Direction } from '$lib/proto/glyph/v1/world_pb';
+import { ActionKind, CharacterState, Direction } from '$lib/proto/sleepers/v1/world_pb';
 import { MoveInput } from './move-input';
 
 function setup() {

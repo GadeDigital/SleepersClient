@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js';
 import type { Chunk } from '$lib/net/game-state.svelte';
-import type { TileType } from '$lib/proto/glyph/v1/world_pb';
+import type { TileType } from '$lib/proto/sleepers/v1/world_pb';
 import { TILE_SIZE } from './scale';
 
 /** Drawn for a tile id missing from the catalogue, so it stands out. */

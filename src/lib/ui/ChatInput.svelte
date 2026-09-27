@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SpeechMode } from '$lib/proto/glyph/v1/world_pb';
+	import type { SpeechMode } from '$lib/proto/sleepers/v1/world_pb';
 	import { MAX_LENGTH, MAX_WAITING, MODE_NAMES, MODES, parsePrefix } from './speech';
 
 	interface Props {

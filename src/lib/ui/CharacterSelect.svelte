@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { Account, CharacterSummary } from '$lib/proto/glyph/v1/accounts_pb';
-	import { CharacterState } from '$lib/proto/glyph/v1/world_pb';
+	import type { Account, CharacterSummary } from '$lib/proto/sleepers/v1/accounts_pb';
+	import { CharacterState } from '$lib/proto/sleepers/v1/world_pb';
 
 	interface Props {
 		account: Account;

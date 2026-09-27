@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SpeechMode } from '$lib/proto/glyph/v1/world_pb';
+import { SpeechMode } from '$lib/proto/sleepers/v1/world_pb';
 import { parsePrefix } from './speech';
 
 describe('parsePrefix', () => {

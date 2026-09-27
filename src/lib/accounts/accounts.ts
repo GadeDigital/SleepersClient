@@ -6,7 +6,7 @@ import {
 	ErrorResponseSchema,
 	type Account,
 	type CharacterSummary
-} from '$lib/proto/glyph/v1/accounts_pb';
+} from '$lib/proto/sleepers/v1/accounts_pb';
 
 /**
  * The account service's API (ADR 043, ADR 048): JSON bodies from the proto

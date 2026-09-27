@@ -1,6 +1,6 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import type { ChatEntry } from '$lib/net/game-state.svelte';
-import { SpeechMode } from '$lib/proto/glyph/v1/world_pb';
+import { SpeechMode } from '$lib/proto/sleepers/v1/world_pb';
 
 const BACKGROUND = 0x0e0f14;
 const TEXT = 0xf2f2f2;

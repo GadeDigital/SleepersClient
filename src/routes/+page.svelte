@@ -8,10 +8,10 @@
 	import SignIn from '$lib/ui/SignIn.svelte';
 	import CharacterSelect from '$lib/ui/CharacterSelect.svelte';
 	import { createCharacter, fetchAccount } from '$lib/accounts/accounts';
-	import type { Account, CharacterSummary } from '$lib/proto/glyph/v1/accounts_pb';
+	import type { Account, CharacterSummary } from '$lib/proto/sleepers/v1/accounts_pb';
 	import { accessToken, signIn, signInConfigured, signOut } from '$lib/auth/auth';
 	import WorldView from '$lib/world/WorldView.svelte';
-	import { ActionKind, CharacterState } from '$lib/proto/glyph/v1/world_pb';
+	import { ActionKind, CharacterState } from '$lib/proto/sleepers/v1/world_pb';
 
 	// Back from the game (left, kicked or disconnected): the characters'
 	// states have changed, so the account is asked for again.

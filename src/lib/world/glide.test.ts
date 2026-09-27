@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CharacterView } from '$lib/net/game-state.svelte';
-import { CharacterState } from '$lib/proto/glyph/v1/world_pb';
+import { CharacterState } from '$lib/proto/sleepers/v1/world_pb';
 import { glidePosition } from './glide';
 
 const standing: CharacterView = {

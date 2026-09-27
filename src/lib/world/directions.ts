@@ -1,4 +1,4 @@
-import { Direction } from '$lib/proto/glyph/v1/world_pb';
+import { Direction } from '$lib/proto/sleepers/v1/world_pb';
 
 /** One-tile offset for each direction; y grows south (see world.proto). */
 export const DELTAS: Record<Direction, [number, number]> = {

@@ -1,6 +1,6 @@
 import { Container, Graphics, TextureStyle, type Application } from 'pixi.js';
 import type { GameState } from '$lib/net/game-state.svelte';
-import { ActionKind, type Direction } from '$lib/proto/glyph/v1/world_pb';
+import { ActionKind, type Direction } from '$lib/proto/sleepers/v1/world_pb';
 import { CharacterSprite } from './character-sprite';
 import { drawChunk } from './chunk-layer';
 import { DELTAS } from './directions';

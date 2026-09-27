@@ -3,8 +3,8 @@ import {
 	ClientMessageSchema,
 	ServerMessageSchema,
 	type ClientMessage
-} from '$lib/proto/glyph/v1/messages_pb';
-import type { ActionKind, Direction, SpeechMode } from '$lib/proto/glyph/v1/world_pb';
+} from '$lib/proto/sleepers/v1/messages_pb';
+import type { ActionKind, Direction, SpeechMode } from '$lib/proto/sleepers/v1/world_pb';
 import { GameState } from './game-state.svelte';
 
 export type Status = 'idle' | 'connecting' | 'joined' | 'closed';

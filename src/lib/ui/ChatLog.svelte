@@ -2,7 +2,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { ChatEntry } from '$lib/net/game-state.svelte';
-	import { SpeechMode } from '$lib/proto/glyph/v1/world_pb';
+	import { SpeechMode } from '$lib/proto/sleepers/v1/world_pb';
 	import { layout, visibleRange } from './virtual';
 
 	interface Props {

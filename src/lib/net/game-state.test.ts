@@ -1,7 +1,7 @@
 import { create, type MessageInitShape } from '@bufbuild/protobuf';
 import { describe, expect, it } from 'vitest';
-import { ServerMessageSchema } from '$lib/proto/glyph/v1/messages_pb';
-import { ActionKind, CharacterState, Direction, SpeechMode } from '$lib/proto/glyph/v1/world_pb';
+import { ServerMessageSchema } from '$lib/proto/sleepers/v1/messages_pb';
+import { ActionKind, CharacterState, Direction, SpeechMode } from '$lib/proto/sleepers/v1/world_pb';
 import { GameState, LOG_LIMIT } from './game-state.svelte';
 
 function msg(init: MessageInitShape<typeof ServerMessageSchema>) {

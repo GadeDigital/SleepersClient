@@ -1,4 +1,4 @@
-import type { ServerMessage } from '$lib/proto/glyph/v1/messages_pb';
+import type { ServerMessage } from '$lib/proto/sleepers/v1/messages_pb';
 import {
 	CharacterState,
 	type Character,
@@ -7,7 +7,7 @@ import {
 	type MapInfo,
 	type TileType,
 	type SpeechMode
-} from '$lib/proto/glyph/v1/world_pb';
+} from '$lib/proto/sleepers/v1/world_pb';
 import { TickClock } from './tick-clock';
 
 /** A step in progress, as announced by StepStarted (ADR 023). */

@@ -3,7 +3,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { on } from 'svelte/events';
 	import type { GameState } from '$lib/net/game-state.svelte';
-	import type { ActionKind, Direction } from '$lib/proto/glyph/v1/world_pb';
+	import type { ActionKind, Direction } from '$lib/proto/sleepers/v1/world_pb';
 	import { MoveInput } from './move-input';
 	import { WorldRenderer } from './world-renderer';
 

@@ -1,4 +1,4 @@
-import { ActionKind, Direction } from '$lib/proto/glyph/v1/world_pb';
+import { ActionKind, Direction } from '$lib/proto/sleepers/v1/world_pb';
 import type { GameState } from '$lib/net/game-state.svelte';
 import { DELTAS, directionOf } from './directions';
 

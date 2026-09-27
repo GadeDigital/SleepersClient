@@ -1,4 +1,4 @@
-import { SpeechMode } from '$lib/proto/glyph/v1/world_pb';
+import { SpeechMode } from '$lib/proto/sleepers/v1/world_pb';
 
 /** The modes in the order the chat input cycles through them. */
 export const MODES = [SpeechMode.WHISPER, SpeechMode.TALK, SpeechMode.YELL] as const;
