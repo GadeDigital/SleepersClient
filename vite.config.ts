@@ -15,7 +15,7 @@ export default defineConfig({
 		})
 	],
 	server: {
-		// Listen on IPv4 loopback, like glyph-server. "localhost" can resolve to
+		// Listen on IPv4 loopback, like sleepers-server. "localhost" can resolve to
 		// IPv6 only, which a browser with IPv6 disabled cannot reach.
 		host: '127.0.0.1'
 	},

@@ -1,5 +1,5 @@
 {
-	"name": "glyph-client",
+	"name": "sleepers-client",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -14,7 +14,7 @@
 		"format": "prettier --write .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
-		"proto": "mkdir -p src/lib/proto && find src/lib/proto -name '*_pb.ts' -delete && protoc -I ../glyph-server/proto --es_out=src/lib/proto --es_opt=target=ts $(find ../glyph-server/proto -name '*.proto')"
+		"proto": "mkdir -p src/lib/proto && find src/lib/proto -name '*_pb.ts' -delete && protoc -I ../sleepers-server/proto --es_out=src/lib/proto --es_opt=target=ts $(find ../sleepers-server/proto -name '*.proto')"
 	},
 	"devDependencies": {
 		"@bufbuild/protoc-gen-es": "2.15.0",
