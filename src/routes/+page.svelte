@@ -11,7 +11,7 @@
 	import type { Account, CharacterSummary } from '$lib/proto/glyph/v1/accounts_pb';
 	import { accessToken, signIn, signInConfigured, signOut } from '$lib/auth/auth';
 	import WorldView from '$lib/world/WorldView.svelte';
-	import { ActionKind } from '$lib/proto/glyph/v1/world_pb';
+	import { ActionKind, CharacterState } from '$lib/proto/glyph/v1/world_pb';
 
 	// Back from the game (left, kicked or disconnected): the characters'
 	// states have changed, so the account is asked for again.
@@ -115,6 +115,8 @@
 			<p class="status aim" role="status">
 				{AIM_PROMPTS[aiming]}: hold a direction and let go (Esc cancels)
 			</p>
+		{:else if connection.game.me?.state === CharacterState.ASLEEP}
+			<p class="status asleep" role="status">You are asleep. Move to get up.</p>
 		{:else if connection.game.rejection}
 			<!-- A new refusal re-creates the paragraph, restarting its fade. -->
 			{#key connection.game.rejections}
@@ -212,6 +214,10 @@
 
 	.status.aim {
 		color: #e0a458;
+	}
+
+	.status.asleep {
+		color: #c58ad6;
 	}
 
 	/* Shown for 4 s, then faded out and left invisible. */

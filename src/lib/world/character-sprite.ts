@@ -1,5 +1,5 @@
 import { Container, Graphics, Text } from 'pixi.js';
-import { isUnconscious, type CharacterView } from '$lib/net/game-state.svelte';
+import { isAsleep, isUnconscious, type CharacterView } from '$lib/net/game-state.svelte';
 import { TILE_SIZE } from './scale';
 import { SpeechBubble } from './speech-bubble';
 
@@ -16,6 +16,7 @@ const LYING_W = 13;
 const LYING_H = 6;
 const LYING_ALPHA = 0.45;
 const LYING_LABEL_ALPHA = 0.5;
+const ASLEEP_ALPHA = 0.75;
 /** The action progress bar, in art pixels. */
 const PROGRESS_W = 14;
 const PROGRESS = 0xe0a458;
@@ -32,7 +33,8 @@ export class CharacterSprite {
 	/** The latest line the character said, above the name. */
 	readonly bubble: SpeechBubble;
 	/** The state the body was last drawn for, to redraw only on change. */
-	#drawn: { unconscious: boolean; isYou: boolean } | null = null;
+	#drawn: { unconscious: boolean; asleep: boolean; isYou: boolean } | null = null;
+	#name: string;
 	/** Top of the body in art pixels within its tile; the name sits above it. */
 	#top = 0;
 	/** The progress bar's filled width last drawn, in art pixels; -1 if hidden. */
@@ -42,6 +44,7 @@ export class CharacterSprite {
 		bodies.addChild(this.body);
 		this.progress.zIndex = 2; // over every body
 		bodies.addChild(this.progress);
+		this.#name = c.name;
 		this.label = new Text({
 			text: c.name,
 			style: {
@@ -58,12 +61,17 @@ export class CharacterSprite {
 	/** Draws the body for the character's state; cheap when nothing changed. */
 	draw(c: CharacterView, isYou: boolean): void {
 		const unconscious = isUnconscious(c);
-		if (this.#drawn?.unconscious === unconscious && this.#drawn.isYou === isYou) return;
-		this.#drawn = { unconscious, isYou };
+		const asleep = isAsleep(c);
+		const d = this.#drawn;
+		if (d?.unconscious === unconscious && d.asleep === asleep && d.isYou === isYou) return;
+		this.#drawn = { unconscious, asleep, isYou };
+		// Sleepers lie down too, less dimmed than the unconscious, with a "z".
+		const lying = unconscious || asleep;
+		this.label.text = asleep ? `${this.#name} z` : this.#name;
 
 		const colour = COLOURS[c.id % COLOURS.length];
-		const w = unconscious ? LYING_W : BODY_W;
-		const h = unconscious ? LYING_H : BODY_H;
+		const w = lying ? LYING_W : BODY_W;
+		const h = lying ? LYING_H : BODY_H;
 		const x = Math.floor((TILE_SIZE - w) / 2);
 		this.#top = TILE_SIZE - h - 1;
 		this.body
@@ -71,9 +79,9 @@ export class CharacterSprite {
 			.rect(x, this.#top, w, h)
 			.fill(isYou ? YOU : OUTLINE)
 			.rect(x + 1, this.#top + 1, w - 2, h - 2)
-			.fill({ color: colour, alpha: unconscious ? LYING_ALPHA : 1 });
+			.fill({ color: colour, alpha: unconscious ? LYING_ALPHA : asleep ? ASLEEP_ALPHA : 1 });
 		// Bodies lie under anyone standing on the same tile (they do not block, ADR 023).
-		this.body.zIndex = unconscious ? 0 : 1;
+		this.body.zIndex = lying ? 0 : 1;
 		this.label.alpha = unconscious ? LYING_LABEL_ALPHA : 1;
 	}
 

@@ -274,6 +274,11 @@ function view(c: Character): CharacterView {
 	};
 }
 
+/** Whether a character is asleep: lying in a bed (ADR 046). */
+export function isAsleep(c: CharacterView): boolean {
+	return c.state === CharacterState.ASLEEP;
+}
+
 export function isUnconscious(c: CharacterView): boolean {
 	return c.state === CharacterState.UNCONSCIOUS;
 }

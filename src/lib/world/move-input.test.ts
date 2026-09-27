@@ -135,4 +135,18 @@ describe('MoveInput', () => {
 		input.keyup('KeyD');
 		expect(acts).toEqual([]); // walking again, not acting
 	});
+
+	it('lies down with L, without aiming', () => {
+		const { game } = setup();
+		const acts: [ActionKind, Direction][] = [];
+		const input = new MoveInput(
+			game,
+			() => {},
+			(k, d) => acts.push([k, d])
+		);
+		expect(input.keydown('KeyL', false)).toBe(true);
+		expect(input.keydown('KeyL', true)).toBe(true); // key repeat sends nothing more
+		expect(acts).toEqual([[ActionKind.SLEEP, Direction.UNSPECIFIED]]);
+		expect(input.aiming).toBeNull();
+	});
 });

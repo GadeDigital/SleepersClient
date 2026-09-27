@@ -1,4 +1,4 @@
-import { ActionKind, type Direction } from '$lib/proto/glyph/v1/world_pb';
+import { ActionKind, Direction } from '$lib/proto/glyph/v1/world_pb';
 import type { GameState } from '$lib/net/game-state.svelte';
 import { DELTAS, directionOf } from './directions';
 
@@ -31,6 +31,9 @@ const LEAD_TICKS = 2;
  * crossing your path then only holds you up until they have passed.
  */
 const RETRY_TICKS = 5;
+
+/** L lies down to sleep on the bed you stand on (ADR 046): no aiming. */
+const SLEEP_KEY = 'KeyL';
 
 /** Keys that start aiming an action (ADR 039). */
 const ACTION_KEYS: Record<string, ActionKind> = {
@@ -98,6 +101,10 @@ export class MoveInput {
 
 	/** Returns true if the key is one of ours, so the page should ignore it. */
 	keydown(code: string, repeat: boolean): boolean {
+		if (code === SLEEP_KEY) {
+			if (!repeat && this.#aiming === null) this.#act(ActionKind.SLEEP, Direction.UNSPECIFIED);
+			return true;
+		}
 		if (code in ACTION_KEYS) {
 			if (!repeat) this.#setAiming(this.#aiming === ACTION_KEYS[code] ? null : ACTION_KEYS[code]);
 			return true;
