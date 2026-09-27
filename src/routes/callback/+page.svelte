@@ -16,7 +16,7 @@
 </script>
 
 <svelte:head>
-	<title>Signing in… · Glyph</title>
+	<title>Signing in… · Sleepers</title>
 </svelte:head>
 
 <main>

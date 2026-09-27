@@ -95,7 +95,7 @@
 </script>
 
 <svelte:head>
-	<title>Glyph</title>
+	<title>Sleepers</title>
 </svelte:head>
 
 {#if connection.status === 'joined'}
@@ -131,7 +131,7 @@
 	</div>
 {:else}
 	<main class="start">
-		<h1>Glyph</h1>
+		<h1>Sleepers</h1>
 		{#if signInConfigured}
 			{#if signedIn && account}
 				<CharacterSelect
