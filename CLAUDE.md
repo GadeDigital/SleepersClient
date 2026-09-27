@@ -9,7 +9,7 @@ Sleepers is a multiplayer, chat-driven space game in 2D pixel art. Players crew 
 Both sit side by side in a parent folder, which is opened in VSCodium:
 
 ```
-sleepers/
+Sleepers/
   sleepers-server/   the Go game server, proto/ schema and docs/ (separate repository)
   sleepers-client/   THIS repository: Svelte 5 + PixiJS web client
 ```
