@@ -56,7 +56,7 @@
 	</div>
 {:else}
 	<NamePrompt
-		onjoin={(name) => connection.join(name)}
+		onjoin={(name) => connection.join({ name })}
 		busy={connection.status === 'connecting'}
 		error={connection.error}
 	/>

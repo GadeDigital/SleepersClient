@@ -36,10 +36,11 @@ export class Connection {
 	}
 
 	/**
-	 * Connects and performs the dev login.
-	 * DEVELOPMENT ONLY: the name is the whole identity, with no password.
+	 * Connects and joins the game: with the player's access token and the
+	 * character to play (ADR 048), or, DEVELOPMENT ONLY, a name alone, which
+	 * the server accepts only when it runs with -dev-tools (ADR 047).
 	 */
-	join(name: string): void {
+	join(who: { accessToken: string; characterId: bigint } | { name: string }): void {
 		this.close();
 		this.status = 'connecting';
 		this.error = null;
@@ -48,7 +49,7 @@ export class Connection {
 		ws.binaryType = 'arraybuffer';
 		this.#ws = ws;
 
-		ws.onopen = () => this.#send({ message: { case: 'join', value: { name } } });
+		ws.onopen = () => this.#send({ message: { case: 'join', value: who } });
 		ws.onmessage = (ev: MessageEvent<ArrayBuffer>) => {
 			const msg = fromBinary(ServerMessageSchema, new Uint8Array(ev.data));
 			if (msg.message.case === 'worldSnapshot') this.status = 'joined';
