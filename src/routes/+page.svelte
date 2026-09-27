@@ -6,11 +6,18 @@
 	import DebugPanel from '$lib/ui/DebugPanel.svelte';
 	import NamePrompt from '$lib/ui/NamePrompt.svelte';
 	import SignIn from '$lib/ui/SignIn.svelte';
+	import CharacterSelect from '$lib/ui/CharacterSelect.svelte';
+	import { createCharacter, fetchAccount } from '$lib/accounts/accounts';
+	import type { Account, CharacterSummary } from '$lib/proto/glyph/v1/accounts_pb';
 	import { accessToken, signIn, signInConfigured, signOut } from '$lib/auth/auth';
 	import WorldView from '$lib/world/WorldView.svelte';
 	import { ActionKind } from '$lib/proto/glyph/v1/world_pb';
 
-	const connection = new Connection();
+	// Back from the game (left, kicked or disconnected): the characters'
+	// states have changed, so the account is asked for again.
+	const connection = new Connection(undefined, () => {
+		if (signedIn) loadAccount();
+	});
 
 	onDestroy(() => connection.close());
 
@@ -23,14 +30,59 @@
 
 	/** Whether the player is signed in; null while checking. */
 	let signedIn = $state<boolean | null>(signInConfigured ? null : false);
+	/** The signed-in player's account and characters. */
+	let account = $state.raw<Account | null>(null);
+	let busy = $state(false);
+
+	/** A current access token, or null (and signed out) if there is none. */
+	async function token(): Promise<string | null> {
+		const t = await accessToken();
+		if (t === null) signedIn = false;
+		return t;
+	}
+
+	async function loadAccount() {
+		const t = await token();
+		if (t === null) return;
+		try {
+			account = await fetchAccount(t);
+			authError = null;
+		} catch (e) {
+			fail(e);
+		}
+	}
+
+	async function play(c: CharacterSummary) {
+		const t = await token();
+		if (t !== null) connection.join({ accessToken: t, characterId: c.id });
+	}
+
+	async function create(name: string) {
+		busy = true;
+		try {
+			const t = await token();
+			if (t !== null) {
+				await createCharacter(t, name);
+				await loadAccount();
+			}
+		} catch (e) {
+			fail(e);
+		} finally {
+			busy = false;
+		}
+	}
+
 	onMount(() => {
-		if (signInConfigured)
-			accessToken()
-				.then((token) => (signedIn = token !== null))
-				.catch((e) => {
-					signedIn = false;
-					fail(e);
-				});
+		if (!signInConfigured) return;
+		accessToken()
+			.then((t) => {
+				signedIn = t !== null;
+				if (signedIn) loadAccount();
+			})
+			.catch((e) => {
+				signedIn = false;
+				fail(e);
+			});
 	});
 
 	/** The action being aimed, for the prompt; null when walking. */
@@ -79,11 +131,21 @@
 	<main class="start">
 		<h1>Glyph</h1>
 		{#if signInConfigured}
-			<SignIn
-				{signedIn}
-				onsignin={() => signIn().catch(fail)}
-				onsignout={() => signOut().catch(fail)}
-			/>
+			{#if signedIn && account}
+				<CharacterSelect
+					{account}
+					busy={busy || connection.status === 'connecting'}
+					onplay={play}
+					oncreate={create}
+					onsignout={() => signOut().catch(fail)}
+				/>
+			{:else}
+				<SignIn
+					{signedIn}
+					onsignin={() => signIn().catch(fail)}
+					onsignout={() => signOut().catch(fail)}
+				/>
+			{/if}
 			{#if authError}
 				<p class="error" role="alert">Signing in failed: {authError}</p>
 			{/if}

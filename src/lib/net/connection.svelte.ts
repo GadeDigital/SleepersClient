@@ -31,8 +31,12 @@ export class Connection {
 	#url: string;
 	#ws: WebSocket | null = null;
 
-	constructor(url: string = defaultServerUrl()) {
+	#onclosed: () => void;
+
+	/** onclosed is called whenever the connection closes, however it closed. */
+	constructor(url: string = defaultServerUrl(), onclosed: () => void = () => {}) {
 		this.#url = url;
+		this.#onclosed = onclosed;
 	}
 
 	/**
@@ -64,6 +68,7 @@ export class Connection {
 			this.#ws = null;
 			this.status = 'closed';
 			this.error ??= ev.reason || 'The connection to the server closed.';
+			this.#onclosed();
 		};
 	}
 

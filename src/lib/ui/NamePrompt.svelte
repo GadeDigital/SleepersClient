@@ -47,7 +47,14 @@
 	input,
 	button {
 		font: inherit;
+		color: inherit;
 		padding: 0.5rem;
+		background: #1c1e27;
+		border: 1px solid #3a3d4b;
+	}
+
+	button:disabled {
+		opacity: 0.5;
 	}
 
 	.error {
