@@ -12,6 +12,10 @@ npm run dev      # dev server at http://127.0.0.1:5173
 npm run proto    # regenerate src/lib/proto/ from ../glyph-server/proto/ (needs protoc)
 ```
 
+## Settings
+
+Copy `.env.example` to `.env` (gitignored, never commit it) and fill it in: the identity provider's authority, client id and audience for signing in (ADR 042), the account service's address, and `VITE_DEV_LOGIN=1` to show the development login. Restart `npm run dev` after changing it.
+
 ## Playing locally
 
 Run the server with `make dev` in `../glyph-server` (it accepts pages from `127.0.0.1:5173` and `localhost:5173`), then `npm run dev` here and open http://127.0.0.1:5173 in two windows. Move with WASD or the arrow keys (two held make a diagonal; Q/E/Z/C are diagonals too). G digs, B builds a wall and X takes one down: press the key, hold a direction to aim at the tile next to you, and let go (Esc cancels). Set `VITE_SERVER_URL` to use a server other than `ws://<this host>:8080/ws`.
