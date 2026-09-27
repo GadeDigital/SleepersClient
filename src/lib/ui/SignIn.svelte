@@ -17,7 +17,7 @@
 		<button type="button" class="link" onclick={onsignout}>Sign out</button>
 	{:else}
 		<button type="button" class="primary" onclick={onsignin}>Sign in</button>
-		<p class="note">You choose how on the next page: email, Discord, …</p>
+		<p class="note">You sign in on the next page.</p>
 	{/if}
 </section>
 
