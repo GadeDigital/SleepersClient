@@ -1,6 +1,6 @@
 # glyph-client
 
-The web client for Project Glyph: a Svelte 5 + PixiJS single-page app built with Vite (SvelteKit with SSR off and `adapter-static`).
+The web client for Sleepers: a Svelte 5 + PixiJS single-page app built with Vite (SvelteKit with SSR off and `adapter-static`).
 
 The server, message schema and design docs live in the sibling repository `../glyph-server/`. See `CLAUDE.md` and `../glyph-server/docs/` for the architecture and plan.
 

@@ -1,8 +1,8 @@
 # glyph-client
 
-This is **glyph-client**, one of two repositories for Project Glyph. It contains the web client: a Svelte 5 + PixiJS app built with Vite, running in the player's browser.
+This is **glyph-client**, one of two repositories for Sleepers. It contains the web client: a Svelte 5 + PixiJS app built with Vite, running in the player's browser.
 
-Glyph (formerly Project Hydra) is a multiplayer, chat-driven space game in 2D pixel art. Players crew ships, talk in character, explore procedurally generated planets and build bases. The world is tile-based (1 tile is about 1 m).
+Sleepers is a multiplayer, chat-driven space game in 2D pixel art. Players crew ships, talk in character, explore procedurally generated planets and build bases. The world is tile-based (1 tile is about 1 m).
 
 ## The two repositories
 
