@@ -113,9 +113,13 @@ export class Engine {
 		const l = canvasLayout(this.#pixelSize, this.#host.width, this.#host.height, this.#host.dpr);
 		this.#layout = l;
 		// The buffer is set in art pixels; CSS stretches it by a whole number
-		// of physical pixels, drawn nearest-neighbour by image-rendering.
-		this.renderer.setPixelRatio(1);
-		this.renderer.setSize(l.bufferWidth, l.bufferHeight, false);
+		// of physical pixels, drawn nearest-neighbour by image-rendering. The
+		// pixel ratio is buffer pixels per CSS pixel, as in the reference, so
+		// sizes given in CSS pixels (such as PointsMaterial.size) match it.
+		// The half pixel keeps floor() in setSize from losing a column.
+		const ratio = l.bufferWidth / l.cssWidth;
+		this.renderer.setPixelRatio(ratio);
+		this.renderer.setSize((l.bufferWidth + 0.5) / ratio, (l.bufferHeight + 0.5) / ratio, false);
 		this.#canvas.style.width = `${l.cssWidth}px`;
 		this.#canvas.style.height = `${l.cssHeight}px`;
 		for (const view of this.#views) view.resize(l.cssWidth, l.cssHeight);
