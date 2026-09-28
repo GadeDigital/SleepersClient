@@ -1,15 +1,11 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import type { ChatEntry } from '$lib/net/game-state.svelte';
 import { SpeechMode } from '$lib/proto/sleepers/v1/world_pb';
+import { bubbleDuration } from '$lib/ui/speech';
 
 const BACKGROUND = 0x0e0f14;
 const TEXT = 0xf2f2f2;
 const MUFFLED = 0x8a8d99;
-
-/** How long a line stays over its speaker: longer lines stay longer. */
-export function bubbleDuration(text: string): number {
-	return Math.min(8000, 3000 + 60 * [...text].length);
-}
 
 /**
  * The latest line a character said, shown above their name for a while. It

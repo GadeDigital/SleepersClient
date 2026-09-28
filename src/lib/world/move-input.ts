@@ -1,22 +1,39 @@
 import { ActionKind, Direction } from '$lib/proto/sleepers/v1/world_pb';
 import type { GameState } from '$lib/net/game-state.svelte';
-import { DELTAS, directionOf } from './directions';
+import { DELTAS } from './directions';
+import { screenToGrid } from './screen-direction';
 
-/** Keys that push toward an offset. Two held together make a diagonal. */
+/**
+ * Keys that push towards the screen's edges, as [right, up]. Two held
+ * together make a diagonal; which grid direction that is depends on the
+ * camera's heading (ADR 057).
+ */
 const KEYS: Record<string, [number, number]> = {
-	KeyW: [0, -1],
-	ArrowUp: [0, -1],
-	KeyS: [0, 1],
-	ArrowDown: [0, 1],
+	KeyW: [0, 1],
+	ArrowUp: [0, 1],
+	KeyS: [0, -1],
+	ArrowDown: [0, -1],
 	KeyA: [-1, 0],
 	ArrowLeft: [-1, 0],
 	KeyD: [1, 0],
-	ArrowRight: [1, 0],
-	KeyQ: [-1, -1],
-	KeyE: [1, -1],
-	KeyZ: [-1, 1],
-	KeyC: [1, 1]
+	ArrowRight: [1, 0]
 };
+
+/** Q and E turn the camera 90° (ADR 057). */
+const ROTATE_KEYS: Record<string, -1 | 1> = { KeyQ: -1, KeyE: 1 };
+
+/**
+ * The camera, as movement needs it: the heading it is turning to (not the
+ * in-between angle while it eases, so keys change meaning the moment Q or E
+ * is pressed), and a way to turn it.
+ */
+export interface CameraControl {
+	heading(): number;
+	rotate(step: -1 | 1): void;
+}
+
+/** A camera facing north: W is north and D east. For tests. */
+const NORTH_UP: CameraControl = { heading: () => 0, rotate: () => {} };
 
 /**
  * Send the follow-up move this many ticks before the current step arrives,
@@ -48,7 +65,8 @@ const ACTION_KEYS: Record<string, ActionKind> = {
  *
  * G, B or X starts aiming an action; while aiming, direction keys choose the
  * adjacent tile instead of walking, and releasing them sends the action at
- * the tile aimed at. The same key again, or Escape, stops aiming.
+ * the tile aimed at. The same key again, or Escape, stops aiming. Q and E
+ * turn the camera; the direction keys follow it at once.
  */
 export class MoveInput {
 	readonly #held = new Set<string>();
@@ -56,6 +74,9 @@ export class MoveInput {
 	readonly #move: (dir: Direction) => void;
 	readonly #act: (kind: ActionKind, dir: Direction) => void;
 	readonly #onAiming: (kind: ActionKind | null) => void;
+	readonly #camera: CameraControl;
+	/** The direction last sent as a move, to notice when turning changes it. */
+	#lastSent: Direction | null = null;
 	/** The action being aimed, or null when walking. */
 	#aiming: ActionKind | null = null;
 	/** The step a follow-up was already sent for, by its start tick. */
@@ -69,12 +90,14 @@ export class MoveInput {
 		game: GameState,
 		move: (dir: Direction) => void,
 		act: (kind: ActionKind, dir: Direction) => void = () => {},
-		onAiming: (kind: ActionKind | null) => void = () => {}
+		onAiming: (kind: ActionKind | null) => void = () => {},
+		camera: CameraControl = NORTH_UP
 	) {
 		this.#game = game;
 		this.#move = move;
 		this.#act = act;
 		this.#onAiming = onAiming;
+		this.#camera = camera;
 	}
 
 	/** The action being aimed, or null. */
@@ -90,13 +113,13 @@ export class MoveInput {
 
 	/** The direction the held keys point, or null. */
 	get direction(): Direction | null {
-		let dx = 0;
-		let dy = 0;
+		let right = 0;
+		let up = 0;
 		for (const code of this.#held) {
-			dx += KEYS[code][0];
-			dy += KEYS[code][1];
+			right += KEYS[code][0];
+			up += KEYS[code][1];
 		}
-		return directionOf(dx, dy);
+		return screenToGrid(Math.sign(right), Math.sign(up), this.#camera.heading());
 	}
 
 	/** Returns true if the key is one of ours, so the page should ignore it. */
@@ -107,6 +130,10 @@ export class MoveInput {
 		}
 		if (code in ACTION_KEYS) {
 			if (!repeat) this.#setAiming(this.#aiming === ACTION_KEYS[code] ? null : ACTION_KEYS[code]);
+			return true;
+		}
+		if (code in ROTATE_KEYS) {
+			if (!repeat) this.#rotate(ROTATE_KEYS[code]);
 			return true;
 		}
 		if (code === 'Escape' && this.#aiming !== null) {
@@ -162,7 +189,19 @@ export class MoveInput {
 		if (step.arriveTick - tickNow <= LEAD_TICKS) this.#send(dir);
 	}
 
+	/**
+	 * Turns the camera. A key held while walking now points another way, so
+	 * the new direction is sent at once, like pressing a new key.
+	 */
+	#rotate(step: -1 | 1): void {
+		this.#camera.rotate(step);
+		if (this.#aiming !== null) return;
+		const dir = this.direction;
+		if (dir !== null && dir !== this.#lastSent) this.#send(dir);
+	}
+
 	#send(dir: Direction): void {
+		this.#lastSent = dir;
 		this.#sentTick = this.#tick;
 		const step = this.#game.me?.step;
 		// A command sent during a step is its follow-up; don't send another.

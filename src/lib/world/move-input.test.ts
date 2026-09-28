@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GameState } from '$lib/net/game-state.svelte';
 import { ActionKind, CharacterState, Direction } from '$lib/proto/sleepers/v1/world_pb';
-import { MoveInput } from './move-input';
+import { MoveInput, type CameraControl } from './move-input';
 
 function setup() {
 	const game = new GameState();
@@ -148,5 +148,102 @@ describe('MoveInput', () => {
 		expect(input.keydown('KeyL', true)).toBe(true); // key repeat sends nothing more
 		expect(acts).toEqual([[ActionKind.SLEEP, Direction.UNSPECIFIED]]);
 		expect(input.aiming).toBeNull();
+	});
+
+	it('drops the single-key diagonals Q, E, Z and C', () => {
+		const { input, sent } = setup();
+		expect(input.keydown('KeyZ', false)).toBe(false);
+		expect(input.keydown('KeyC', false)).toBe(false);
+		expect(sent).toEqual([]);
+	});
+});
+
+/** A camera like the tile view's: Q/E set the target heading at once, easing is separate. */
+function turningCamera(): CameraControl & { turns: number[] } {
+	let target = Math.PI / 4;
+	const turns: number[] = [];
+	return {
+		turns,
+		heading: () => target,
+		rotate: (step) => {
+			turns.push(step);
+			target += (step * Math.PI) / 2;
+		}
+	};
+}
+
+describe('MoveInput with a turning camera (ADR 057)', () => {
+	function withCamera() {
+		const game = new GameState();
+		game.myId = 1;
+		game.characters = {
+			1: { id: 1, name: 'Ana', x: 1, y: 1, state: CharacterState.AWAKE, step: null, action: null }
+		};
+		const sent: Direction[] = [];
+		const acts: [ActionKind, Direction][] = [];
+		const camera = turningCamera();
+		const input = new MoveInput(
+			game,
+			(dir) => {
+				game.pendingMove = dir;
+				sent.push(dir);
+			},
+			(k, d) => acts.push([k, d]),
+			() => {},
+			camera
+		);
+		return { game, input, sent, acts, camera };
+	}
+
+	it('moves up the screen: north-west at the starting heading', () => {
+		const { input, sent } = withCamera();
+		input.keydown('KeyW', false);
+		expect(sent).toEqual([Direction.NORTH_WEST]);
+	});
+
+	it('turns the camera with Q and E, once per press', () => {
+		const { input, camera } = withCamera();
+		expect(input.keydown('KeyE', false)).toBe(true);
+		expect(input.keydown('KeyE', true)).toBe(true); // key repeat
+		expect(input.keydown('KeyQ', false)).toBe(true);
+		expect(camera.turns).toEqual([1, -1]);
+	});
+
+	it('maps keys by the target heading the moment Q or E is pressed', () => {
+		const { input, camera } = withCamera();
+		// Each E turns a quarter; up the screen turns with it.
+		const ups: (Direction | null)[] = [];
+		for (let i = 0; i < 4; i++) {
+			input.keydown('KeyW', false);
+			ups.push(input.direction);
+			input.keyup('KeyW');
+			input.keydown('KeyE', false);
+		}
+		expect(ups).toEqual([
+			Direction.NORTH_WEST,
+			Direction.SOUTH_WEST,
+			Direction.SOUTH_EAST,
+			Direction.NORTH_EAST
+		]);
+		expect(camera.turns).toEqual([1, 1, 1, 1]);
+	});
+
+	it('sends the new direction at once when turning with a key held', () => {
+		const { input, sent } = withCamera();
+		input.keydown('KeyW', false);
+		input.keydown('KeyE', false);
+		expect(sent).toEqual([Direction.NORTH_WEST, Direction.SOUTH_WEST]);
+		input.keydown('KeyQ', false);
+		expect(sent).toEqual([Direction.NORTH_WEST, Direction.SOUTH_WEST, Direction.NORTH_WEST]);
+	});
+
+	it('does not walk when turning while aiming, and aims up the screen', () => {
+		const { input, sent, acts } = withCamera();
+		input.keydown('KeyB', false);
+		input.keydown('KeyW', false);
+		input.keydown('KeyE', false);
+		expect(sent).toEqual([]);
+		input.keyup('KeyW');
+		expect(acts).toEqual([[ActionKind.BUILD_WALL, Direction.SOUTH_WEST]]);
 	});
 });
