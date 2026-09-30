@@ -34,3 +34,8 @@ export function parsePrefix(text: string): { mode: (typeof MODES)[number] | null
 	if (!match) return { mode: null, rest: text };
 	return { mode: PREFIXES[match[1]], rest: text.slice(match[0].length) };
 }
+
+/** How long a line stays over its speaker: longer lines stay longer. */
+export function bubbleDuration(text: string): number {
+	return Math.min(8000, 3000 + 60 * [...text].length);
+}

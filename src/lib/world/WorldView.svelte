@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { Application } from 'pixi.js';
-	import type { Attachment } from 'svelte/attachments';
+	import '$lib/render/fonts.css';
 	import { on } from 'svelte/events';
+	import EngineHost from '$lib/render/EngineHost.svelte';
+	import type { Engine } from '$lib/render/engine';
+	import { loadPixelSize, savePixelSize, type PixelSize } from '$lib/render/pixel';
+	import { TileView } from '$lib/render/views/TileView';
 	import type { GameState } from '$lib/net/game-state.svelte';
 	import type { ActionKind, Direction } from '$lib/proto/sleepers/v1/world_pb';
+	import PixelSizeButtons from '$lib/ui/PixelSizeButtons.svelte';
 	import { MoveInput } from './move-input';
-	import { WorldRenderer } from './world-renderer';
 
 	interface Props {
 		game: GameState;
@@ -19,101 +22,67 @@
 
 	let { game, onmove, onact, onaiming }: Props = $props();
 
-	/** Runs Pixi on the canvas, and the movement and action keys, for as long as it is mounted. */
-	function pixi(
-		g: GameState,
-		move: (direction: Direction) => void,
-		act: (kind: ActionKind, direction: Direction) => void,
-		aiming: (kind: ActionKind | null) => void
-	): Attachment<HTMLCanvasElement> {
-		return (canvas) => {
-			const app = new Application();
-			const input = new MoveInput(g, move, act, aiming);
-			const followUp = () => input.update(g.clock.now(performance.now()));
-			let renderer = $state.raw<WorldRenderer | null>(null);
-			let unmounted = false;
+	let pixelSize = $state<PixelSize>(loadPixelSize());
 
-			// init is async; the canvas may be unmounted before it finishes.
-			// Resolution 1 and no autoDensity: the renderer sizes the canvas in
-			// physical pixels itself, and CSS stretches it over the host.
-			app
-				.init({
-					canvas,
-					background: '#0e0f14',
-					antialias: false,
-					roundPixels: true,
-					autoDensity: false,
-					resolution: 1
-				})
-				.then(() => {
-					if (unmounted) {
-						app.destroy();
-						return;
-					}
-					renderer = new WorldRenderer(app, g, () =>
-						input.aiming === null ? null : { kind: input.aiming, dir: input.direction }
-					);
-					app.ticker.add(followUp);
-				});
+	function setPixelSize(size: PixelSize) {
+		pixelSize = size;
+		savePixelSize(size);
+	}
 
-			// Movement keys, ignored while typing or with a modifier so browser
-			// shortcuts such as Ctrl+W keep working.
-			const typing = (e: KeyboardEvent) =>
-				e.ctrlKey ||
-				e.metaKey ||
-				e.altKey ||
-				(e.target instanceof HTMLElement && e.target.closest('input, textarea') !== null);
-			const offKeydown = on(window, 'keydown', (e) => {
-				if (!typing(e) && input.keydown(e.code, e.repeat)) e.preventDefault();
-			});
-			const offKeyup = on(window, 'keyup', (e) => input.keyup(e.code));
-			const offBlur = on(window, 'blur', () => input.release());
+	/**
+	 * Draws the world in three.js (ADR 051, ADR 057) and runs the movement,
+	 * action and camera keys, for as long as the view is mounted.
+	 */
+	function setup(engine: Engine) {
+		const view = new TileView(game, engine.labelLayer);
+		engine.add(view);
+		const input = new MoveInput(game, onmove, onact, onaiming, {
+			heading: () => view.targetYaw,
+			rotate: (step) => view.rotate(step)
+		});
+		view.aim = () => (input.aiming === null ? null : { kind: input.aiming, dir: input.direction });
+		engine.onFrame = () => input.update(game.clock.now(performance.now()));
 
-			// The canvas's exact size in physical pixels. When the backing store
-			// matches device-pixel-content-box, the browser draws the canvas 1:1
-			// onto the screen's pixels at any browser zoom. Where that box is
-			// missing, or disagrees with devicePixelRatio (some emulated
-			// displays), work the size out from the CSS size instead.
-			let size = $state.raw({ width: 1, height: 1, dpr: 1 });
-			const observer = new ResizeObserver(([entry]) => {
-				const dpr = window.devicePixelRatio;
-				const width = entry.contentRect.width * dpr;
-				const height = entry.contentRect.height * dpr;
-				const box = entry.devicePixelContentBoxSize?.[0];
-				const exact =
-					box && Math.abs(box.inlineSize - width) <= 1 && Math.abs(box.blockSize - height) <= 1;
-				size = exact
-					? { width: box.inlineSize, height: box.blockSize, dpr }
-					: { width: Math.round(width), height: Math.round(height), dpr };
-			});
-			try {
-				observer.observe(canvas, { box: 'device-pixel-content-box' });
-			} catch {
-				observer.observe(canvas);
-			}
-
-			$effect(() => {
-				renderer?.resize(size.width, size.height, size.dpr);
-			});
-
-			return () => {
-				offKeydown();
-				offKeyup();
-				offBlur();
-				observer.disconnect();
-				unmounted = true;
-				if (renderer) {
-					app.ticker.remove(followUp);
-					renderer.destroy();
-					app.destroy();
-				}
+		// Keys are ignored while typing or with a modifier, so browser
+		// shortcuts such as Ctrl+W keep working.
+		const typing = (e: KeyboardEvent) =>
+			e.ctrlKey ||
+			e.metaKey ||
+			e.altKey ||
+			(e.target instanceof HTMLElement && e.target.closest('input, textarea') !== null);
+		const canvas = engine.renderer.domElement;
+		const ndc = (e: PointerEvent) => {
+			const r = canvas.getBoundingClientRect();
+			return {
+				x: ((e.clientX - r.left) / r.width) * 2 - 1,
+				y: -((e.clientY - r.top) / r.height) * 2 + 1
 			};
+		};
+		const offs = [
+			on(window, 'keydown', (e) => {
+				if (!typing(e) && input.keydown(e.code, e.repeat)) e.preventDefault();
+			}),
+			on(window, 'keyup', (e) => input.keyup(e.code)),
+			on(window, 'blur', () => input.release()),
+			on(canvas, 'pointermove', (e) => view.hover(e.pointerType === 'mouse' ? ndc(e) : null)),
+			on(canvas, 'pointerleave', () => view.hover(null))
+		];
+		return () => {
+			for (const off of offs) off();
+			engine.onFrame = () => {};
 		};
 	}
 </script>
 
 <div class="world">
-	<canvas {@attach pixi(game, onmove, onact, onaiming)}></canvas>
+	<EngineHost {pixelSize} {setup} />
+	<section class="view card">
+		<PixelSizeButtons value={pixelSize} onchange={setPixelSize} />
+		<p class="keys">
+			<b>WASD</b> or <b>arrows</b> walk up the screen · <b>Q / E</b> turn · <b>B</b> build ·
+			<b>X</b> take down · <b>L</b> sleep
+		</p>
+	</section>
 </div>
 
 <style>
@@ -121,11 +90,102 @@
 		position: absolute;
 		inset: 0;
 		overflow: hidden;
+		background: #05070d;
 	}
 
-	canvas {
+	.card {
+		position: absolute;
+		top: 1rem;
+		left: 1rem;
+		width: min(22rem, calc(100% - 2rem));
+		box-sizing: border-box;
+		padding: 10px 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		background: rgba(9, 13, 23, 0.84);
+		border: 1px solid #26314a;
+		border-radius: 2px;
+	}
+
+	.keys {
+		margin: 0;
+		font:
+			400 11px/1.5 'IBM Plex Mono',
+			ui-monospace,
+			monospace;
+		color: #7c89a2;
+	}
+
+	.keys b {
+		color: #cdd6e8;
+		font-weight: 500;
+	}
+
+	/* A character's speech bubble stacked over its name (ADR 051: HTML text). */
+	.world :global(.char-tag) {
+		position: absolute;
+		left: 0;
+		top: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 3px;
+		will-change: transform;
+	}
+
+	.world :global(.char-tag .lbl) {
+		position: static;
+	}
+
+	.world :global(.char-tag.down) {
+		opacity: 0.5;
+	}
+
+	.world :global(.bubble) {
+		max-width: 16em;
+		padding: 0.3em 0.55em;
+		background: rgba(14, 15, 20, 0.8);
+		border-radius: 0.4em;
+		color: #f2f2f2;
+		font:
+			400 13px/1.35 'IBM Plex Sans',
+			system-ui,
+			sans-serif;
+		text-align: center;
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	.world :global(.bubble[hidden]),
+	.world :global(.progress[hidden]) {
+		display: none;
+	}
+
+	/* An action under way (ADR 039), under the name. */
+	.world :global(.progress) {
+		width: 28px;
+		height: 4px;
+		padding: 1px;
+		background: rgba(5, 7, 13, 0.85);
+		border: 1px solid #26314a;
+	}
+
+	.world :global(.progress i) {
 		display: block;
-		width: 100%;
 		height: 100%;
+		background: #e0a458;
+	}
+
+	.world :global(.bubble.muffled) {
+		color: #8a8d99;
+	}
+
+	.world :global(.bubble.soft) {
+		font-style: italic;
+	}
+
+	.world :global(.bubble.loud) {
+		font-weight: 600;
 	}
 </style>

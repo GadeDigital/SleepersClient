@@ -1,6 +1,6 @@
 # sleepers-client
 
-The web client for Sleepers: a Svelte 5 + PixiJS single-page app built with Vite (SvelteKit with SSR off and `adapter-static`).
+The web client for Sleepers: a Svelte 5 + three.js single-page app built with Vite (SvelteKit with SSR off and `adapter-static`). The world is drawn as low-poly 3D scenes with a pixel-art look (ADR 051).
 
 The server, message schema and design docs live in the sibling repository `../sleepers-server/`. See `CLAUDE.md` and `../sleepers-server/docs/` for the architecture and plan.
 
@@ -18,7 +18,9 @@ Copy `.env.example` to `.env` (gitignored, never commit it) and fill it in: the 
 
 ## Playing locally
 
-Run the server with `make dev` in `../sleepers-server` (it accepts pages from `127.0.0.1:5173` and `localhost:5173`), then `npm run dev` here and open http://127.0.0.1:5173 in two windows. Move with WASD or the arrow keys (two held make a diagonal; Q/E/Z/C are diagonals too). L lies down to sleep on a bed (that is how you log out: close the game asleep and you wake there); moving gets you up. G digs, B builds a wall and X takes one down: press the key, hold a direction to aim at the tile next to you, and let go (Esc cancels). Set `VITE_SERVER_URL` to use a server other than `ws://<this host>:8080/ws`.
+Run the server with `make dev` in `../sleepers-server` (it accepts pages from `127.0.0.1:5173` and `localhost:5173`), then `npm run dev` here and open http://127.0.0.1:5173 in two windows. Move with WASD or the arrow keys, relative to the screen: up walks up the screen, and two held make a diagonal. Q and E turn the camera 90°. L lies down to sleep on a bed (that is how you log out: close the game asleep and you wake there); moving gets you up. B builds a wall and X takes one down: press the key, hold a direction to aim at the tile next to you, and let go (Esc cancels). The pixel size (Off, 2×, 3×, 4×) is in the card at the top left. F2 opens the development tools (planet overview, teleport): DEVELOPMENT ONLY, for accounts with the admin role on a server run with `-dev-tools` (ADR 067). Development-login accounts are admins; an Auth0 account gets the role in the database (`UPDATE accounts SET role = 'admin' ...`). Until the server tells the client whether the tools are on, F2 still opens the panel elsewhere, and the server refuses its requests.
+
+In development builds, http://127.0.0.1:5173/mockup shows the zoom-ladder mockup on mock data (ADR 053). Set `VITE_SERVER_URL` to use a server other than `ws://<this host>:8080/ws`.
 
 ## Checks
 
