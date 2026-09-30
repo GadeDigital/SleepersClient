@@ -21,7 +21,6 @@ export interface Aim {
 }
 
 const AIM_COLOURS: Partial<Record<ActionKind, number>> = {
-	[ActionKind.DIG]: 0xe0a458,
 	[ActionKind.BUILD_WALL]: 0x7f8fd6,
 	[ActionKind.REMOVE_WALL]: 0xc9656f
 };

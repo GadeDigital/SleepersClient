@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { screenPoint } from './labels';
+import { screenPoint, snapToGrid } from './labels';
+
+describe('snapToGrid', () => {
+	it('rounds to whole art pixels', () => {
+		expect(snapToGrid(10, 3)).toBe(9);
+		expect(snapToGrid(10.6, 3)).toBe(12);
+		expect(snapToGrid(7.4, 5 / 1.5)).toBeCloseTo(20 / 3);
+	});
+
+	it('leaves positions alone with no grid', () => {
+		expect(snapToGrid(10.37, 0)).toBe(10.37);
+	});
+});
 
 describe('screenPoint', () => {
 	it('maps normalised coordinates to CSS pixels, y down', () => {

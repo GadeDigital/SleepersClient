@@ -52,9 +52,11 @@ const RETRY_TICKS = 5;
 /** L lies down to sleep on the bed you stand on (ADR 046): no aiming. */
 const SLEEP_KEY = 'KeyL';
 
-/** Keys that start aiming an action (ADR 039). */
+/**
+ * Keys that start aiming an action (ADR 039). Dig has no key: the client
+ * no longer offers it (ADR 056).
+ */
 const ACTION_KEYS: Record<string, ActionKind> = {
-	KeyG: ActionKind.DIG,
 	KeyB: ActionKind.BUILD_WALL,
 	KeyX: ActionKind.REMOVE_WALL
 };
@@ -63,7 +65,7 @@ const ACTION_KEYS: Record<string, ActionKind> = {
  * Turns held keys into move and action commands. It only asks: the server
  * decides whether each step or action happens (ADR 002).
  *
- * G, B or X starts aiming an action; while aiming, direction keys choose the
+ * B or X starts aiming an action; while aiming, direction keys choose the
  * adjacent tile instead of walking, and releasing them sends the action at
  * the tile aimed at. The same key again, or Escape, stops aiming. Q and E
  * turn the camera; the direction keys follow it at once.

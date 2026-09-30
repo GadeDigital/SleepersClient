@@ -208,7 +208,7 @@ describe('GameState', () => {
 					case: 'actionStarted',
 					value: {
 						characterId: 2,
-						kind: ActionKind.DIG,
+						kind: ActionKind.BUILD_WALL,
 						target: { x: 3, y: 1 },
 						startTick: 40n,
 						endTick: 70n
@@ -218,7 +218,7 @@ describe('GameState', () => {
 			0
 		);
 		expect(game.characters[2].action).toEqual({
-			kind: ActionKind.DIG,
+			kind: ActionKind.BUILD_WALL,
 			targetX: 3,
 			targetY: 1,
 			startTick: 40,

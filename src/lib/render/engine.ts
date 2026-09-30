@@ -78,7 +78,7 @@ export class Engine {
 	/** Adds a view, sized to the canvas; the first one added becomes active. */
 	add(view: View): void {
 		this.#views.push(view);
-		view.resize(this.#layout.cssWidth, this.#layout.cssHeight);
+		view.resize(this.#layout.cssWidth, this.#layout.cssHeight, this.#layout.bufferHeight);
 		if (!this.#active) this.setActive(view, -1);
 	}
 
@@ -122,7 +122,7 @@ export class Engine {
 		this.renderer.setSize((l.bufferWidth + 0.5) / ratio, (l.bufferHeight + 0.5) / ratio, false);
 		this.#canvas.style.width = `${l.cssWidth}px`;
 		this.#canvas.style.height = `${l.cssHeight}px`;
-		for (const view of this.#views) view.resize(l.cssWidth, l.cssHeight);
+		for (const view of this.#views) view.resize(l.cssWidth, l.cssHeight, l.bufferHeight);
 		this.onLayout(l);
 	}
 
@@ -147,7 +147,9 @@ export class Engine {
 		const view = this.#active;
 		if (view) {
 			this.renderer.render(view.scene, view.camera);
-			projectLabels(view.labels, view.camera, this.#layout.cssWidth, this.#layout.cssHeight);
+			// Labels snap to the art-pixel grid: CSS pixels per art pixel (ADR 066).
+			const l = this.#layout;
+			projectLabels(view.labels, view.camera, l.cssWidth, l.cssHeight, l.cssWidth / l.bufferWidth);
 		}
 		this.#raf = requestAnimationFrame(this.#frame);
 	};

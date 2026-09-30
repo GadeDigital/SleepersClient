@@ -88,7 +88,6 @@
 	/** The action being aimed, for the prompt; null when walking. */
 	let aiming = $state<ActionKind | null>(null);
 	const AIM_PROMPTS: Partial<Record<ActionKind, string>> = {
-		[ActionKind.DIG]: 'Dig',
 		[ActionKind.BUILD_WALL]: 'Build a wall',
 		[ActionKind.REMOVE_WALL]: 'Take down a wall'
 	};

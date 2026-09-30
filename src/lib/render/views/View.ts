@@ -12,8 +12,11 @@ export interface View {
 	readonly labels: readonly Label[];
 	/** Where a dive into the zoom below aims, for views that orbit. */
 	readonly focus?: Vector3;
-	/** The canvas's CSS size changed. */
-	resize(width: number, height: number): void;
+	/**
+	 * The canvas's CSS size changed; bufferHeight is its height in art
+	 * pixels, for views that snap their camera to the art-pixel grid.
+	 */
+	resize(width: number, height: number, bufferHeight: number): void;
 	/** The view becomes active: 1 when zooming out into it, -1 when zooming in. */
 	enter(direction: 1 | -1): void;
 	/**

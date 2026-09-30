@@ -40,6 +40,7 @@
 			heading: () => view.targetYaw,
 			rotate: (step) => view.rotate(step)
 		});
+		view.aim = () => (input.aiming === null ? null : { kind: input.aiming, dir: input.direction });
 		engine.onFrame = () => input.update(game.clock.now(performance.now()));
 
 		// Keys are ignored while typing or with a modifier, so browser
@@ -156,8 +157,24 @@
 		overflow-wrap: anywhere;
 	}
 
-	.world :global(.bubble[hidden]) {
+	.world :global(.bubble[hidden]),
+	.world :global(.progress[hidden]) {
 		display: none;
+	}
+
+	/* An action under way (ADR 039), under the name. */
+	.world :global(.progress) {
+		width: 28px;
+		height: 4px;
+		padding: 1px;
+		background: rgba(5, 7, 13, 0.85);
+		border: 1px solid #26314a;
+	}
+
+	.world :global(.progress i) {
+		display: block;
+		height: 100%;
+		background: #e0a458;
 	}
 
 	.world :global(.bubble.muffled) {

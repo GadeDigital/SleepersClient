@@ -32,8 +32,14 @@ import {
 	type Chunk,
 	type GameState
 } from '$lib/net/game-state.svelte';
-import { SpeechMode, type TileType } from '$lib/proto/sleepers/v1/world_pb';
+import {
+	ActionKind,
+	SpeechMode,
+	type Direction,
+	type TileType
+} from '$lib/proto/sleepers/v1/world_pb';
 import { bubbleDuration } from '$lib/ui/speech';
+import { DELTAS } from '$lib/world/directions';
 import { glidePosition } from '$lib/world/glide';
 import { queuedTarget } from '$lib/world/move-input';
 import { wrapDelta } from '$lib/world/wrap';
@@ -65,6 +71,22 @@ const UNKNOWN = 0xff00ff;
 const COLOURS = [0x5fb4a2, 0xc9656f, 0x7f8fd6, 0xb8c46a, 0xc58ad6, 0x6fb7d9, 0xd9926f];
 const AMBER = 0xf2a93b;
 
+/** What the player is aiming: an action, and the direction held, if any. */
+export interface Aim {
+	kind: ActionKind;
+	dir: Direction | null;
+}
+
+const AIM_COLOURS: Partial<Record<ActionKind, number>> = {
+	[ActionKind.BUILD_WALL]: 0x7f8fd6,
+	[ActionKind.REMOVE_WALL]: 0xc9656f
+};
+
+/** A tile with this tag is drawn as a bed (ADR 057, ADR 058). */
+const SLEEP_TAG = 'sleep';
+/** A sleeper lies on the bed's mattress. */
+const ON_BED = 0.38;
+
 /** A deterministic 0–1 value per tile, for the floor's slight colour variation. */
 function tileNoise(x: number, y: number): number {
 	let h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263);
@@ -93,6 +115,10 @@ interface Figure {
 	name: HTMLElement;
 	bubble: HTMLElement;
 	bubbleUntil: number;
+	/** An action's progress, under the name; its fill's width in percent, -1 hidden. */
+	progress: HTMLElement;
+	progressFill: HTMLElement;
+	progressShown: number;
 	drawn: { lying: 'no' | 'asleep' | 'unconscious'; isYou: boolean } | null;
 	/** Where the name points, reused every frame. */
 	head: Vector3;
@@ -151,6 +177,16 @@ export class TileView implements View {
 		opacity: 0.35
 	});
 	readonly #hoverMat = new LineBasicMaterial({ color: AMBER });
+	readonly #aimDimMat = new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+	readonly #aimMat = new LineBasicMaterial({ color: 0xffffff });
+	readonly #bedFrameMat = new MeshLambertMaterial({ color: 0x4a3f36 });
+	readonly #bedTopMat = new MeshLambertMaterial({ color: 0xffffff });
+	readonly #pillowMat = new MeshLambertMaterial({ color: 0xd8d4cc });
+	/** What the player is aiming, if anything; read every frame. */
+	aim: () => Aim | null = () => null;
+	/** World units per art pixel, for snapping the camera; 0 before the first resize. */
+	#unitsPerArtPixel = 0;
+	readonly #aimTiles: LineLoop[] = [];
 
 	readonly #queued: LineLoop;
 	readonly #hover: LineLoop;
@@ -184,6 +220,14 @@ export class TileView implements View {
 		this.#hover = new LineLoop(square(), this.#hoverMat);
 		this.#hover.visible = false;
 		this.scene.add(this.#queued, this.#hover);
+		// While aiming an action: the 8 neighbouring tiles, the aimed one bright.
+		const aimSquare = square();
+		for (let i = 0; i < 8; i++) {
+			const loop = new LineLoop(aimSquare, this.#aimDimMat);
+			loop.visible = false;
+			this.#aimTiles.push(loop);
+			this.scene.add(loop);
+		}
 	}
 
 	/** Q (−1) and E (+1): turn the camera 90°, eased. */
@@ -201,9 +245,10 @@ export class TileView implements View {
 		if (tile) this.#place(this.#hover, tile[0], tile[1], 0.03);
 	}
 
-	resize(width: number, height: number): void {
+	resize(width: number, height: number, bufferHeight: number): void {
 		const aspect = width / height;
 		const halfH = Math.max(HALF_HEIGHT, PORTRAIT_HALF_WIDTH / aspect);
+		this.#unitsPerArtPixel = (2 * halfH) / bufferHeight;
 		this.camera.left = -halfH * aspect;
 		this.camera.right = halfH * aspect;
 		this.camera.top = halfH;
@@ -221,6 +266,7 @@ export class TileView implements View {
 		this.#drawChunks();
 		this.#drawCharacters(dt, t, tickNow, nowMs);
 		this.#drawQueued();
+		this.#drawAim(tickNow);
 		this.#yaw += (this.targetYaw - this.#yaw) * Math.min(1, dt * 6);
 		const target = this.#target.set(this.#sceneX(this.#camX), 0, this.#camY - this.#oy + 0.5);
 		this.camera.position.set(
@@ -229,6 +275,29 @@ export class TileView implements View {
 			target.z + Math.cos(this.#yaw) * CAM_OUT
 		);
 		this.camera.lookAt(target);
+		this.#snapCamera();
+	}
+
+	/**
+	 * Moves the camera to the nearest whole art pixel on screen, so the
+	 * ground's pixels stay put while the camera follows you (ADR 066). The
+	 * grid is anchored in map coordinates, not the render origin, so moving
+	 * the origin does not shift it.
+	 */
+	#snapCamera(): void {
+		const unit = this.#unitsPerArtPixel;
+		if (!(unit > 0)) return;
+		const cam = this.camera;
+		cam.updateMatrixWorld();
+		const right = SNAP_RIGHT.setFromMatrixColumn(cam.matrixWorld, 0);
+		const up = SNAP_UP.setFromMatrixColumn(cam.matrixWorld, 1);
+		const abs = SNAP_ABS.copy(cam.position).add(SNAP_ORIGIN.set(this.#ox, 0, this.#oy));
+		const r = right.dot(abs);
+		const u = up.dot(abs);
+		const dr = Math.round(r / unit) * unit - r;
+		const du = Math.round(u / unit) * unit - u;
+		cam.position.addScaledVector(right, dr).addScaledVector(up, du);
+		cam.updateMatrixWorld();
 	}
 
 	dispose(): void {
@@ -256,7 +325,12 @@ export class TileView implements View {
 			this.#packMat,
 			this.#ringMat,
 			this.#queuedMat,
-			this.#hoverMat
+			this.#hoverMat,
+			this.#aimDimMat,
+			this.#aimMat,
+			this.#bedFrameMat,
+			this.#bedTopMat,
+			this.#pillowMat
 		])
 			m.dispose();
 		this.#zTex.dispose();
@@ -340,16 +414,27 @@ export class TileView implements View {
 	#buildChunk(chunk: Chunk, size: number, types: ReadonlyMap<number, TileType>): DrawnChunk {
 		const group = new Group();
 		let open = 0;
-		for (const id of chunk.tiles) if (!types.get(id)?.blocks) open++;
+		let beds = 0;
+		for (const id of chunk.tiles) {
+			const type = types.get(id);
+			if (!type?.blocks) open++;
+			if (type && !type.blocks && type.tags.includes(SLEEP_TAG)) beds++;
+		}
 		const walls = size * size - open;
 		const slab = new InstancedMesh(this.#box, this.#slabMat, 1);
 		slab.setMatrixAt(0, matrix(size / 2, -0.36, size / 2, size, 0.6, size));
 		const floor = new InstancedMesh(this.#box, this.#floorMat, Math.max(1, open));
 		const wall = new InstancedMesh(this.#box, this.#wallMat, Math.max(1, walls));
 		const cap = new InstancedMesh(this.#box, this.#capMat, Math.max(1, walls));
+		// A bed: a dark frame, a mattress in the tile's colour, a pillow at the north end.
+		const frame = new InstancedMesh(this.#box, this.#bedFrameMat, Math.max(1, beds));
+		const top = new InstancedMesh(this.#box, this.#bedTopMat, Math.max(1, beds));
+		const pillow = new InstancedMesh(this.#box, this.#pillowMat, Math.max(1, beds));
 		floor.count = open;
 		wall.count = walls;
 		cap.count = walls;
+		frame.count = top.count = pillow.count = beds;
+		let bi = 0;
 		const c = this.#colour;
 		let fi = 0;
 		let wi = 0;
@@ -375,10 +460,19 @@ export class TileView implements View {
 					);
 					floor.setColorAt(fi, c);
 					fi++;
+					if (type?.tags.includes(SLEEP_TAG)) {
+						// The floor under a bed is darker, so the bed stands out.
+						floor.setColorAt(fi - 1, c.multiplyScalar(0.55));
+						frame.setMatrixAt(bi, matrix(x, 0.11, z, 0.86, 0.22, 0.94));
+						top.setMatrixAt(bi, matrix(x, 0.26, z + 0.1, 0.8, 0.08, 0.72));
+						top.setColorAt(bi, c.set(colour));
+						pillow.setMatrixAt(bi, matrix(x, 0.27, z - 0.34, 0.6, 0.07, 0.18));
+						bi++;
+					}
 				}
 			}
 		}
-		const meshes = [slab, floor, wall, cap];
+		const meshes = [slab, floor, wall, cap, frame, top, pillow];
 		for (const m of meshes) {
 			if (m.instanceColor) m.instanceColor.needsUpdate = true;
 			if (m.count > 0) group.add(m);
@@ -420,19 +514,26 @@ export class TileView implements View {
 				const dy = s.toY - s.fromY;
 				if (dx || dy) this.#facing.set(c.id, Math.atan2(dx, dy));
 			}
-			const facing = this.#facing.get(c.id);
+			// Sleepers lie head to the north, on the pillow.
+			const facing = f.drawn?.lying === 'asleep' ? 0 : this.#facing.get(c.id);
 			if (facing !== undefined) {
 				let d = facing - f.root.rotation.y;
 				d = Math.atan2(Math.sin(d), Math.cos(d));
 				f.root.rotation.y += d * Math.min(1, dt * 14);
 			}
 			f.body.position.y = walking ? 0.3 + Math.abs(Math.sin(t * 13)) * 0.035 : 0.3;
+			this.#showProgress(f, c, tickNow);
 			for (let k = 0; k < f.zs.length; k++) {
 				const u = (t * 0.35 + k / 3) % 1;
-				f.zs[k].position.set(Math.sin(u * 6) * 0.12 + u * 0.3, 0.45 + u * 1.1, 0);
+				f.zs[k].position.set(Math.sin(u * 6) * 0.12 + u * 0.3, ON_BED + 0.25 + u * 1.1, 0);
 				f.zs[k].material.opacity = Math.sin(u * Math.PI) * 0.9;
 			}
-			f.head.set(f.root.position.x, f.drawn?.lying === 'no' ? 1.05 : 0.55, f.root.position.z);
+			const lying = f.drawn?.lying;
+			f.head.set(
+				f.root.position.x,
+				lying === 'no' ? 1.05 : lying === 'asleep' ? 0.75 : 0.55,
+				f.root.position.z
+			);
 			if (f.bubble.hidden !== nowMs >= f.bubbleUntil) f.bubble.hidden = nowMs >= f.bubbleUntil;
 		}
 		this.#showNewLines(nowMs);
@@ -490,7 +591,12 @@ export class TileView implements View {
 		const name = document.createElement('div');
 		name.className = 'lbl';
 		name.textContent = c.name;
-		who.append(bubble, name);
+		const progress = document.createElement('div');
+		progress.className = 'progress';
+		progress.hidden = true;
+		const progressFill = document.createElement('i');
+		progress.append(progressFill);
+		who.append(bubble, name, progress);
 		who.style.visibility = 'hidden';
 		this.#layer.appendChild(who);
 		const headPos = new Vector3();
@@ -509,6 +615,9 @@ export class TileView implements View {
 			name,
 			bubble,
 			bubbleUntil: 0,
+			progress,
+			progressFill,
+			progressShown: -1,
 			drawn: null,
 			head: headPos
 		};
@@ -526,7 +635,8 @@ export class TileView implements View {
 		f.pose.position.set(0, 0, 0);
 		if (lying === 'asleep') {
 			f.pose.rotation.x = -Math.PI / 2;
-			f.pose.position.set(0, 0.2, 0.36);
+			f.pose.position.set(0, ON_BED, 0.36);
+			f.root.rotation.y = 0;
 		} else if (lying === 'unconscious') {
 			f.pose.rotation.z = Math.PI / 2;
 			f.pose.position.set(0.36, 0.2, 0);
@@ -581,6 +691,44 @@ export class TileView implements View {
 		if (i >= 0) this.labels.splice(i, 1);
 	}
 
+	/** An action under way as a bar under the name; updated only when it grows. */
+	#showProgress(f: Figure, c: CharacterView, tickNow: number): void {
+		const a = c.action;
+		const pct =
+			a && tickNow >= a.startTick && tickNow < a.endTick
+				? Math.round(((tickNow - a.startTick) / (a.endTick - a.startTick)) * 100)
+				: -1;
+		if (pct === f.progressShown) return;
+		f.progressShown = pct;
+		f.progress.hidden = pct < 0;
+		if (pct >= 0) f.progressFill.style.width = `${pct}%`;
+	}
+
+	/** Outlines the tiles an action could be aimed at, and the aimed one. */
+	#drawAim(tickNow: number): void {
+		const aim = this.aim();
+		const me = this.#game.me;
+		if (!aim || !me) {
+			for (const loop of this.#aimTiles) loop.visible = false;
+			return;
+		}
+		const colour = AIM_COLOURS[aim.kind] ?? 0xf2f2f2;
+		this.#aimDimMat.color.set(colour);
+		this.#aimMat.color.set(colour);
+		const [mx, my] = glidePosition(me, tickNow, this.#wrapWidth());
+		const [ax, ay] = aim.dir === null ? [0, 0] : DELTAS[aim.dir];
+		let i = 0;
+		for (let dy = -1; dy <= 1; dy++) {
+			for (let dx = -1; dx <= 1; dx++) {
+				if (dx === 0 && dy === 0) continue;
+				const loop = this.#aimTiles[i++];
+				loop.visible = true;
+				loop.material = aim.dir !== null && dx === ax && dy === ay ? this.#aimMat : this.#aimDimMat;
+				this.#place(loop, Math.round(mx) + dx, Math.round(my) + dy, 0.04);
+			}
+		}
+	}
+
 	/** Shows the move you sent while stepping, which the server holds as queued. */
 	#drawQueued(): void {
 		const me = this.#game.me;
@@ -607,6 +755,10 @@ export class TileView implements View {
 }
 
 const WHITE = new Color(0xffffff);
+const SNAP_RIGHT = new Vector3();
+const SNAP_UP = new Vector3();
+const SNAP_ABS = new Vector3();
+const SNAP_ORIGIN = new Vector3();
 const m4 = new Matrix4();
 
 /** An instance matrix: position and scale, no rotation. */

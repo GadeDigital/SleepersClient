@@ -95,7 +95,7 @@ describe('MoveInput', () => {
 		expect(sent).toHaveLength(2);
 	});
 
-	it('aims an action with G, B or X, then sends it on release', () => {
+	it('aims an action with B or X, then sends it on release', () => {
 		const { game } = setup();
 		const sent: Direction[] = [];
 		const acts: [ActionKind, Direction][] = [];
@@ -106,14 +106,14 @@ describe('MoveInput', () => {
 			(kind, dir) => acts.push([kind, dir]),
 			(kind) => aiming.push(kind)
 		);
-		expect(withActs.keydown('KeyG', false)).toBe(true);
+		expect(withActs.keydown('KeyB', false)).toBe(true);
 		withActs.keydown('KeyW', false);
 		withActs.keydown('KeyD', false); // aim north-east
 		expect(withActs.direction).toBe(Direction.NORTH_EAST);
 		withActs.keyup('KeyW');
-		expect(acts).toEqual([[ActionKind.DIG, Direction.NORTH_EAST]]);
+		expect(acts).toEqual([[ActionKind.BUILD_WALL, Direction.NORTH_EAST]]);
 		expect(sent).toEqual([]); // aiming never walks
-		expect(aiming).toEqual([ActionKind.DIG, null]);
+		expect(aiming).toEqual([ActionKind.BUILD_WALL, null]);
 		expect(withActs.aiming).toBeNull();
 	});
 
@@ -147,6 +147,12 @@ describe('MoveInput', () => {
 		expect(input.keydown('KeyL', false)).toBe(true);
 		expect(input.keydown('KeyL', true)).toBe(true); // key repeat sends nothing more
 		expect(acts).toEqual([[ActionKind.SLEEP, Direction.UNSPECIFIED]]);
+		expect(input.aiming).toBeNull();
+	});
+
+	it('offers no dig key (ADR 056)', () => {
+		const { input } = setup();
+		expect(input.keydown('KeyG', false)).toBe(false);
 		expect(input.aiming).toBeNull();
 	});
 
