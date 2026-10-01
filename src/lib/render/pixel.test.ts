@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { canvasLayout } from './pixel';
+import { canvasLayout, DEFAULT_PIXEL_SIZE, loadPixelSize } from './pixel';
+
+describe('the pixel size setting', () => {
+	it('is Off, smooth, until a player picks another (ADR 069)', () => {
+		expect(DEFAULT_PIXEL_SIZE).toBe(1);
+		// No saved choice (and here no storage at all): the default.
+		expect(loadPixelSize()).toBe(1);
+	});
+});
 
 describe('canvasLayout', () => {
 	it('matches the reference at 3× on a 1× screen', () => {
