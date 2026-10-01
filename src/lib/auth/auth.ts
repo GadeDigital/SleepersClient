@@ -12,6 +12,12 @@ import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
 const authority = import.meta.env.VITE_OIDC_AUTHORITY as string | undefined;
 const clientId = import.meta.env.VITE_OIDC_CLIENT_ID as string | undefined;
 const audience = import.meta.env.VITE_OIDC_AUDIENCE as string | undefined;
+/**
+ * Where the provider sends the player back after signing in and out. Set at
+ * build time for a deployment (ADR 068); by default, this page's own address.
+ */
+const redirectUri = import.meta.env.VITE_OIDC_REDIRECT_URI as string | undefined;
+const logoutRedirectUri = import.meta.env.VITE_OIDC_POST_LOGOUT_REDIRECT_URI as string | undefined;
 
 /** Whether signing in is set up in .env. */
 export const signInConfigured = Boolean(authority && clientId && audience);
@@ -23,8 +29,8 @@ function users(): UserManager {
 	manager ??= new UserManager({
 		authority: authority!,
 		client_id: clientId!,
-		redirect_uri: `${location.origin}/callback`,
-		post_logout_redirect_uri: `${location.origin}/`,
+		redirect_uri: redirectUri || `${location.origin}/callback`,
+		post_logout_redirect_uri: logoutRedirectUri || `${location.origin}/`,
 		response_type: 'code',
 		scope: 'openid profile offline_access',
 		// Auth0 issues an access token for our API only if asked for it.

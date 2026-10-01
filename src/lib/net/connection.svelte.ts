@@ -14,7 +14,7 @@ export type Status = 'idle' | 'connecting' | 'joined' | 'closed';
  * default is the game server on port 8080 of the host serving the page.
  */
 export function defaultServerUrl(): string {
-	return import.meta.env.VITE_SERVER_URL ?? `ws://${location.hostname}:8080/ws`;
+	return import.meta.env.VITE_SERVER_URL || `ws://${location.hostname}:8080/ws`;
 }
 
 /**
