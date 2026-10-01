@@ -7,7 +7,11 @@ export type PixelSize = 1 | 2 | 3 | 4;
 
 export const PIXEL_SIZES: readonly PixelSize[] = [1, 2, 3, 4];
 
-export const DEFAULT_PIXEL_SIZE: PixelSize = 3;
+/**
+ * Off: smooth rendering at the screen's density, until a player picks 2×,
+ * 3× or 4× (ADR 069, changing ADR 051's default of 3×).
+ */
+export const DEFAULT_PIXEL_SIZE: PixelSize = 1;
 
 const STORAGE_KEY = 'sleepers-px';
 

@@ -13,7 +13,7 @@ import {
  * messages, with the player's access token.
  */
 
-const base = (import.meta.env.VITE_ACCOUNTS_URL as string | undefined) ?? 'http://127.0.0.1:8081';
+const base = (import.meta.env.VITE_ACCOUNTS_URL as string | undefined) || 'http://127.0.0.1:8081';
 
 async function call(token: string, path: string, init: RequestInit = {}): Promise<JsonValue> {
 	const res = await fetch(base + path, {

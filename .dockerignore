@@ -1,0 +1,12 @@
+# What the client image (sleepers-server/deploy/staging/Dockerfile.web)
+# never takes from this folder. Above all the .env: a deployment's settings
+# come from build arguments (ADR 068), never from a developer's .env.
+.git
+node_modules
+build
+.svelte-kit
+.vscode
+.idea
+.env
+.env.*
+!.env.example
