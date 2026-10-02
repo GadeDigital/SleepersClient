@@ -85,8 +85,7 @@
 	<section class="view card">
 		<PixelSizeButtons value={pixelSize} onchange={setPixelSize} />
 		<p class="keys">
-			<b>WASD</b> or <b>arrows</b> walk up the screen · <b>Q / E</b> turn · <b>B</b> build ·
-			<b>X</b> take down · <b>L</b> sleep
+			<b>WASD</b> or <b>arrows</b> walk up the screen · <b>Q / E</b> turn · <b>L</b> sleep in a bed
 		</p>
 	</section>
 </div>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GameState } from '$lib/net/game-state.svelte';
 import { ActionKind, CharacterState, Direction } from '$lib/proto/sleepers/v1/world_pb';
-import { MoveInput, type CameraControl } from './move-input';
+import { BUILD_KEYS, MoveInput, type CameraControl } from './move-input';
 
 function setup() {
 	const game = new GameState();
@@ -95,7 +95,14 @@ describe('MoveInput', () => {
 		expect(sent).toHaveLength(2);
 	});
 
-	it('aims an action with B or X, then sends it on release', () => {
+	it('offers no build or take-down key (ADR 071)', () => {
+		const { input } = setup();
+		expect(input.keydown('KeyB', false)).toBe(false);
+		expect(input.keydown('KeyX', false)).toBe(false);
+		expect(input.aiming).toBeNull();
+	});
+
+	it('aims an action with a dormant action key, then sends it on release', () => {
 		const { game } = setup();
 		const sent: Direction[] = [];
 		const acts: [ActionKind, Direction][] = [];
@@ -104,7 +111,9 @@ describe('MoveInput', () => {
 			game,
 			(dir) => sent.push(dir),
 			(kind, dir) => acts.push([kind, dir]),
-			(kind) => aiming.push(kind)
+			(kind) => aiming.push(kind),
+			undefined,
+			BUILD_KEYS
 		);
 		expect(withActs.keydown('KeyB', false)).toBe(true);
 		withActs.keydown('KeyW', false);
@@ -123,7 +132,10 @@ describe('MoveInput', () => {
 		const input = new MoveInput(
 			game,
 			() => {},
-			(k, d) => acts.push([k, d])
+			(k, d) => acts.push([k, d]),
+			undefined,
+			undefined,
+			BUILD_KEYS
 		);
 		input.keydown('KeyB', false);
 		expect(input.keydown('Escape', false)).toBe(true);
@@ -196,7 +208,8 @@ describe('MoveInput with a turning camera (ADR 057)', () => {
 			},
 			(k, d) => acts.push([k, d]),
 			() => {},
-			camera
+			camera,
+			BUILD_KEYS
 		);
 		return { game, input, sent, acts, camera };
 	}

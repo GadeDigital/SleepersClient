@@ -156,6 +156,8 @@ export class GameState {
 	liftTo = $state<number | null>(null);
 	/** Counts arrivals on another map, so the view can fade between them. */
 	mapChanges = $state(0);
+	/** Counts chunks arriving, so the UI can react to the ground under you. */
+	chunksSeen = $state(0);
 	#seq = 0;
 
 	/** Not reactive: read every frame by the renderer. */
@@ -163,6 +165,14 @@ export class GameState {
 
 	get me(): CharacterView | undefined {
 		return this.characters[this.myId];
+	}
+
+	/** The tile type under a map tile, if its chunk is here. Not reactive. */
+	tileAt(x: number, y: number): TileType | undefined {
+		const size = this.map?.chunkSize ?? 32;
+		const chunk = this.chunks.get(chunkKey(Math.floor(x / size), Math.floor(y / size)));
+		if (!chunk) return undefined;
+		return this.tileTypes.get(chunk.tiles[(y - chunk.cy * size) * size + (x - chunk.cx * size)]);
 	}
 
 	/** Applies one server message received at local time `nowMs`. */
@@ -257,6 +267,7 @@ export class GameState {
 					edges: d.edges.length ? Uint8Array.from(d.edges) : null,
 					version: 0
 				});
+				this.chunksSeen++;
 				break;
 			}
 			case 'tileChanged': {

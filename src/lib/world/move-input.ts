@@ -53,10 +53,11 @@ const RETRY_TICKS = 5;
 const SLEEP_KEY = 'KeyL';
 
 /**
- * Keys that start aiming an action (ADR 039). Dig has no key: the client
- * no longer offers it (ADR 056).
+ * Keys that start aiming an action (ADR 039): B builds a wall, X takes one
+ * down. The game offers them no more (ADR 071); aiming stays, dormant, for
+ * when actions return. Dig has no key either (ADR 056).
  */
-const ACTION_KEYS: Record<string, ActionKind> = {
+export const BUILD_KEYS: Record<string, ActionKind> = {
 	KeyB: ActionKind.BUILD_WALL,
 	KeyX: ActionKind.REMOVE_WALL
 };
@@ -65,7 +66,7 @@ const ACTION_KEYS: Record<string, ActionKind> = {
  * Turns held keys into move and action commands. It only asks: the server
  * decides whether each step or action happens (ADR 002).
  *
- * B or X starts aiming an action; while aiming, direction keys choose the
+ * An action key, when given (none in the game, ADR 071), starts aiming; while aiming, direction keys choose the
  * adjacent tile instead of walking, and releasing them sends the action at
  * the tile aimed at. The same key again, or Escape, stops aiming. Q and E
  * turn the camera; the direction keys follow it at once.
@@ -77,6 +78,7 @@ export class MoveInput {
 	readonly #act: (kind: ActionKind, dir: Direction) => void;
 	readonly #onAiming: (kind: ActionKind | null) => void;
 	readonly #camera: CameraControl;
+	readonly #actionKeys: Record<string, ActionKind>;
 	/** The direction last sent as a move, to notice when turning changes it. */
 	#lastSent: Direction | null = null;
 	/** The action being aimed, or null when walking. */
@@ -93,13 +95,15 @@ export class MoveInput {
 		move: (dir: Direction) => void,
 		act: (kind: ActionKind, dir: Direction) => void = () => {},
 		onAiming: (kind: ActionKind | null) => void = () => {},
-		camera: CameraControl = NORTH_UP
+		camera: CameraControl = NORTH_UP,
+		actionKeys: Record<string, ActionKind> = {}
 	) {
 		this.#game = game;
 		this.#move = move;
 		this.#act = act;
 		this.#onAiming = onAiming;
 		this.#camera = camera;
+		this.#actionKeys = actionKeys;
 	}
 
 	/** The action being aimed, or null. */
@@ -130,8 +134,9 @@ export class MoveInput {
 			if (!repeat && this.#aiming === null) this.#act(ActionKind.SLEEP, Direction.UNSPECIFIED);
 			return true;
 		}
-		if (code in ACTION_KEYS) {
-			if (!repeat) this.#setAiming(this.#aiming === ACTION_KEYS[code] ? null : ACTION_KEYS[code]);
+		if (code in this.#actionKeys) {
+			const kind = this.#actionKeys[code];
+			if (!repeat) this.#setAiming(this.#aiming === kind ? null : kind);
 			return true;
 		}
 		if (code in ROTATE_KEYS) {

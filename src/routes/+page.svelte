@@ -4,6 +4,7 @@
 	import ChatInput from '$lib/ui/ChatInput.svelte';
 	import ChatLog from '$lib/ui/ChatLog.svelte';
 	import DebugPanel from '$lib/ui/DebugPanel.svelte';
+	import LiftPanel from '$lib/ui/LiftPanel.svelte';
 	import NamePrompt from '$lib/ui/NamePrompt.svelte';
 	import SignIn from '$lib/ui/SignIn.svelte';
 	import CharacterSelect from '$lib/ui/CharacterSelect.svelte';
@@ -109,6 +110,7 @@
 		onteleport={(x, y) => connection.debugTeleport(x, y)}
 		onoverview={() => connection.debugOverview()}
 	/>
+	<LiftPanel game={connection.game} onlift={(floor) => connection.useLift(floor)} />
 	<div class="hud">
 		{#if aiming !== null}
 			<p class="status aim" role="status">
