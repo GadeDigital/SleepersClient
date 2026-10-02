@@ -160,6 +160,10 @@
 		position: static;
 	}
 
+	.world :global(.char-tag.ghost) {
+		opacity: 0.55;
+	}
+
 	.world :global(.char-tag.down) {
 		opacity: 0.5;
 	}

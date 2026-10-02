@@ -154,7 +154,7 @@ interface Figure {
 	progress: HTMLElement;
 	progressFill: HTMLElement;
 	progressShown: number;
-	drawn: { lying: 'no' | 'asleep' | 'unconscious'; isYou: boolean } | null;
+	drawn: { lying: 'no' | 'asleep' | 'unconscious'; isYou: boolean; ghost: boolean } | null;
 	/** Where the name points, reused every frame. */
 	head: Vector3;
 	/** The height of the ground drawn under it, eased between levels. */
@@ -1031,8 +1031,16 @@ export class TileView implements View {
 	#pose(f: Figure, c: CharacterView): void {
 		const lying = isUnconscious(c) ? 'unconscious' : isAsleep(c) ? 'asleep' : 'no';
 		const isYou = c.id === this.#game.myId;
-		if (f.drawn?.lying === lying && f.drawn.isYou === isYou) return;
-		f.drawn = { lying, isYou };
+		// Only you see yourself as a ghost; nobody else is sent you (ADR 073).
+		const ghost = isYou && this.#game.ghost;
+		if (f.drawn?.lying === lying && f.drawn.isYou === isYou && f.drawn.ghost === ghost) return;
+		f.drawn = { lying, isYou, ghost };
+		for (const m of [f.bodyMat, f.headMat]) {
+			m.transparent = ghost;
+			m.opacity = ghost ? 0.35 : 1;
+			m.depthWrite = !ghost;
+		}
+		f.who.classList.toggle('ghost', ghost);
 		// Sleepers lie on their back; the unconscious lie on their side,
 		// dimmed, so the two are easy to tell apart.
 		f.pose.rotation.set(0, 0, 0);

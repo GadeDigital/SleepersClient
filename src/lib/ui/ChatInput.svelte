@@ -6,9 +6,11 @@
 		/** Lines sent but not yet spoken; they wait for the voice budget. */
 		waiting: number;
 		onsay: (mode: SpeechMode, text: string) => void;
+		/** /ghost: become a ghost or stop being one; admins only (ADR 073). */
+		onghost: () => void;
 	}
 
-	let { waiting, onsay }: Props = $props();
+	let { waiting, onsay, onghost }: Props = $props();
 
 	let mode = $state<(typeof MODES)[number]>(MODES[1]);
 	let text = $state('');
@@ -32,7 +34,12 @@
 	function onkeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
 			event.preventDefault();
-			if (line) send();
+			// A command, not speech: nothing is said aloud.
+			if (text.trim().toLowerCase() === '/ghost') {
+				onghost();
+				text = '';
+				input?.blur();
+			} else if (line) send();
 			else input?.blur();
 		} else if (event.key === 'Escape') {
 			event.preventDefault();
