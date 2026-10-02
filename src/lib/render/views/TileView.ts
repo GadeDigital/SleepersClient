@@ -113,6 +113,9 @@ const FOG_NEAR = 40;
 const FOG_FAR = 72;
 const NIGHT = 0x05070d;
 
+/** A transmission's lines come up on its console this far apart, in seconds. */
+const TERMINAL_LINE_S = 1.6;
+
 /** Blocking tiles drawn as ground plus their own shape, not as a wall block. */
 const SHAPED = ['water', 'solid', 'fixture', 'pod', 'fence', 'trees'];
 
@@ -245,6 +248,9 @@ export class TileView implements View {
 	readonly #lampLights: PointLight[] = [];
 	#outdoors = true;
 	readonly #glowTex: Texture = glowTexture();
+	/** The transmission on a console, if one is showing (ADR 072). */
+	#terminal: { seq: number; label: Label; until: number } | null = null;
+	#terminalSeq = 0;
 	readonly #poolMat = new MeshBasicMaterial({
 		color: 0xffffff,
 		map: this.#glowTex,
@@ -727,6 +733,7 @@ export class TileView implements View {
 	}
 
 	#clearMap(): void {
+		this.#closeTerminal();
 		for (const c of this.#chunks.values()) this.#disposeChunk(c);
 		this.#chunks.clear();
 		this.#disposeProps();
@@ -865,6 +872,57 @@ export class TileView implements View {
 			if (f.bubble.hidden !== nowMs >= f.bubbleUntil) f.bubble.hidden = nowMs >= f.bubbleUntil;
 		}
 		this.#showNewLines(nowMs);
+		this.#showTransmission(nowMs);
+	}
+
+	/**
+	 * Shows a new transmission on the console it names (ADR 072), as a
+	 * terminal over it whose lines come up one by one; it closes after a
+	 * while, or when you leave the map. Elsewhere it is only in the log.
+	 */
+	#showTransmission(nowMs: number): void {
+		const t = this.#game.transmission;
+		if (t && t.seq !== this.#terminalSeq) {
+			this.#terminalSeq = t.seq;
+			this.#closeTerminal();
+			if (t.at) {
+				const { x, y } = t.at;
+				const el = document.createElement('div');
+				el.className = 'terminal';
+				el.setAttribute('role', 'status');
+				t.lines.forEach((text, i) => {
+					const line = document.createElement('p');
+					line.textContent = text;
+					line.style.animationDelay = `${0.4 + i * TERMINAL_LINE_S}s`;
+					el.append(line);
+				});
+				el.style.visibility = 'hidden';
+				this.#layer.appendChild(el);
+				const at = new Vector3();
+				const label: Label = {
+					el,
+					pos: () => at.set(this.#sceneX(x), this.#groundAt(x, y) + 2.2, y - this.#oy + 0.5),
+					lift: 8
+				};
+				this.labels.push(label);
+				const chars = t.lines.reduce((n, l) => n + l.length, 0);
+				this.#terminal = { seq: t.seq, label, until: nowMs + 12000 + chars * 60 };
+			}
+		}
+		const term = this.#terminal;
+		if (term && nowMs >= term.until) {
+			term.label.el.classList.add('closing');
+			if (nowMs >= term.until + 1000) this.#closeTerminal();
+		}
+	}
+
+	#closeTerminal(): void {
+		const term = this.#terminal;
+		if (!term) return;
+		this.#terminal = null;
+		term.label.el.remove();
+		const i = this.labels.indexOf(term.label);
+		if (i >= 0) this.labels.splice(i, 1);
 	}
 
 	/** Puts each line heard since the last frame over its speaker. */
