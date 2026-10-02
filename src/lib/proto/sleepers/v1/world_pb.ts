@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file sleepers/v1/world.proto.
  */
 export const file_sleepers_v1_world: GenFile = /*@__PURE__*/
-  fileDesc("ChdzbGVlcGVycy92MS93b3JsZC5wcm90bxILc2xlZXBlcnMudjEiGQoGTWFwUmVmEg8KB2FkZHJlc3MYASABKAkibwoHTWFwSW5mbxIgCgNyZWYYASABKAsyEy5zbGVlcGVycy52MS5NYXBSZWYSDQoFd2lkdGgYAiABKA0SDgoGaGVpZ2h0GAMgASgNEg8KB3dyYXBzX3gYBCABKAgSEgoKY2h1bmtfc2l6ZRgFIAEoDSJSCghUaWxlVHlwZRIKCgJpZBgBIAEoDRIMCgRuYW1lGAIgASgJEg4KBmJsb2NrcxgDIAEoCBIOCgZjb2xvdXIYBCABKA0SDAoEdGFncxgFIAMoCSIgCghQb3NpdGlvbhIJCgF4GAEgASgFEgkKAXkYAiABKAUinAEKCUNoYXJhY3RlchIKCgJpZBgBIAEoDRIMCgRuYW1lGAIgASgJEicKCHBvc2l0aW9uGAMgASgLMhUuc2xlZXBlcnMudjEuUG9zaXRpb24SKgoFc3RhdGUYBCABKA4yGy5zbGVlcGVycy52MS5DaGFyYWN0ZXJTdGF0ZRIgCgNtYXAYBSABKAsyEy5zbGVlcGVycy52MS5NYXBSZWYq4AEKCURpcmVjdGlvbhIZChVESVJFQ1RJT05fVU5TUEVDSUZJRUQQABITCg9ESVJFQ1RJT05fTk9SVEgQARIYChRESVJFQ1RJT05fTk9SVEhfRUFTVBACEhIKDkRJUkVDVElPTl9FQVNUEAMSGAoURElSRUNUSU9OX1NPVVRIX0VBU1QQBBITCg9ESVJFQ1RJT05fU09VVEgQBRIYChRESVJFQ1RJT05fU09VVEhfV0VTVBAGEhIKDkRJUkVDVElPTl9XRVNUEAcSGAoURElSRUNUSU9OX05PUlRIX1dFU1QQCCpuCgpTcGVlY2hNb2RlEhsKF1NQRUVDSF9NT0RFX1VOU1BFQ0lGSUVEEAASFwoTU1BFRUNIX01PREVfV0hJU1BFUhABEhQKEFNQRUVDSF9NT0RFX1RBTEsQAhIUChBTUEVFQ0hfTU9ERV9ZRUxMEAMqpgEKCkFjdGlvbktpbmQSGwoXQUNUSU9OX0tJTkRfVU5TUEVDSUZJRUQQABITCg9BQ1RJT05fS0lORF9ESUcQARIaChZBQ1RJT05fS0lORF9CVUlMRF9XQUxMEAISGwoXQUNUSU9OX0tJTkRfUkVNT1ZFX1dBTEwQAxIVChFBQ1RJT05fS0lORF9TTEVFUBAEEhYKEkFDVElPTl9LSU5EX0dFVF9VUBAFKokBCg5DaGFyYWN0ZXJTdGF0ZRIfChtDSEFSQUNURVJfU1RBVEVfVU5TUEVDSUZJRUQQABIZChVDSEFSQUNURVJfU1RBVEVfQVdBS0UQARIfChtDSEFSQUNURVJfU1RBVEVfVU5DT05TQ0lPVVMQAhIaChZDSEFSQUNURVJfU1RBVEVfQVNMRUVQEANCNFoyc2xlZXBlcnMvc2VydmVyL2ludGVybmFsL3BiL3NsZWVwZXJzL3YxO3NsZWVwZXJzdjFiBnByb3RvMw");
+  fileDesc("ChdzbGVlcGVycy92MS93b3JsZC5wcm90bxILc2xlZXBlcnMudjEiGQoGTWFwUmVmEg8KB2FkZHJlc3MYASABKAkizQEKB01hcEluZm8SIAoDcmVmGAEgASgLMhMuc2xlZXBlcnMudjEuTWFwUmVmEg0KBXdpZHRoGAIgASgNEg4KBmhlaWdodBgDIAEoDRIPCgd3cmFwc194GAQgASgIEhIKCmNodW5rX3NpemUYBSABKA0SIAoFcHJvcHMYBiADKAsyES5zbGVlcGVycy52MS5Qcm9wEgwKBG5hbWUYByABKAkSLAoIYnVpbGRpbmcYCCABKAsyGi5zbGVlcGVycy52MS5CdWlsZGluZ0Zsb29yIk4KDUJ1aWxkaW5nRmxvb3ISDAoEbmFtZRgBIAEoCRIOCgZmbG9vcnMYAiADKAkSDQoFZmxvb3IYAyABKA0SEAoIaGFzX2xpZnQYBCABKAgieQoEUHJvcBIMCgRraW5kGAEgASgJEgkKAXgYAiABKAUSCQoBeRgDIAEoBRINCgV3aWR0aBgEIAEoDRINCgVkZXB0aBgFIAEoDRIOCgZoZWlnaHQYBiABKA0SEAoIcm90YXRpb24YByABKA0SDQoFbGFiZWwYCCABKAkiUgoIVGlsZVR5cGUSCgoCaWQYASABKA0SDAoEbmFtZRgCIAEoCRIOCgZibG9ja3MYAyABKAgSDgoGY29sb3VyGAQgASgNEgwKBHRhZ3MYBSADKAkiIAoIUG9zaXRpb24SCQoBeBgBIAEoBRIJCgF5GAIgASgFIpwBCglDaGFyYWN0ZXISCgoCaWQYASABKA0SDAoEbmFtZRgCIAEoCRInCghwb3NpdGlvbhgDIAEoCzIVLnNsZWVwZXJzLnYxLlBvc2l0aW9uEioKBXN0YXRlGAQgASgOMhsuc2xlZXBlcnMudjEuQ2hhcmFjdGVyU3RhdGUSIAoDbWFwGAUgASgLMhMuc2xlZXBlcnMudjEuTWFwUmVmKuABCglEaXJlY3Rpb24SGQoVRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASEwoPRElSRUNUSU9OX05PUlRIEAESGAoURElSRUNUSU9OX05PUlRIX0VBU1QQAhISCg5ESVJFQ1RJT05fRUFTVBADEhgKFERJUkVDVElPTl9TT1VUSF9FQVNUEAQSEwoPRElSRUNUSU9OX1NPVVRIEAUSGAoURElSRUNUSU9OX1NPVVRIX1dFU1QQBhISCg5ESVJFQ1RJT05fV0VTVBAHEhgKFERJUkVDVElPTl9OT1JUSF9XRVNUEAgqbgoKU3BlZWNoTW9kZRIbChdTUEVFQ0hfTU9ERV9VTlNQRUNJRklFRBAAEhcKE1NQRUVDSF9NT0RFX1dISVNQRVIQARIUChBTUEVFQ0hfTU9ERV9UQUxLEAISFAoQU1BFRUNIX01PREVfWUVMTBADKqYBCgpBY3Rpb25LaW5kEhsKF0FDVElPTl9LSU5EX1VOU1BFQ0lGSUVEEAASEwoPQUNUSU9OX0tJTkRfRElHEAESGgoWQUNUSU9OX0tJTkRfQlVJTERfV0FMTBACEhsKF0FDVElPTl9LSU5EX1JFTU9WRV9XQUxMEAMSFQoRQUNUSU9OX0tJTkRfU0xFRVAQBBIWChJBQ1RJT05fS0lORF9HRVRfVVAQBSqJAQoOQ2hhcmFjdGVyU3RhdGUSHwobQ0hBUkFDVEVSX1NUQVRFX1VOU1BFQ0lGSUVEEAASGQoVQ0hBUkFDVEVSX1NUQVRFX0FXQUtFEAESHwobQ0hBUkFDVEVSX1NUQVRFX1VOQ09OU0NJT1VTEAISGgoWQ0hBUkFDVEVSX1NUQVRFX0FTTEVFUBADQjRaMnNsZWVwZXJzL3NlcnZlci9pbnRlcm5hbC9wYi9zbGVlcGVycy92MTtzbGVlcGVyc3YxYgZwcm90bzM");
 
 /**
  * MapRef names a map (ADR 032). A planet's surface is the map named by the
@@ -35,7 +35,8 @@ export const MapRefSchema: GenMessage<MapRef> = /*@__PURE__*/
 
 /**
  * MapInfo describes a map's shape. A planet's surface wraps east to west;
- * its poles are the north and south edges (ADR 031).
+ * its poles are the north and south edges (ADR 031). Other maps, such as a
+ * landing site or a building's floor, end at their edges (ADR 074).
  *
  * @generated from message sleepers.v1.MapInfo
  */
@@ -72,6 +73,28 @@ export type MapInfo = Message<"sleepers.v1.MapInfo"> & {
    * @generated from field: uint32 chunk_size = 5;
    */
   chunkSize: number;
+
+  /**
+   * Static scenery bigger than a tile, for the client to draw (ADR 074).
+   * Props are only looks: where one stands, the map's tiles block.
+   *
+   * @generated from field: repeated sleepers.v1.Prop props = 6;
+   */
+  props: Prop[];
+
+  /**
+   * What to call the map, such as "Port Anker"; may be empty.
+   *
+   * @generated from field: string name = 7;
+   */
+  name: string;
+
+  /**
+   * Set when the map is one floor of a building (ADR 064, ADR 074).
+   *
+   * @generated from field: sleepers.v1.BuildingFloor building = 8;
+   */
+  building?: BuildingFloor | undefined;
 };
 
 /**
@@ -80,6 +103,115 @@ export type MapInfo = Message<"sleepers.v1.MapInfo"> & {
  */
 export const MapInfoSchema: GenMessage<MapInfo> = /*@__PURE__*/
   messageDesc(file_sleepers_v1_world, 1);
+
+/**
+ * BuildingFloor says which building a map is a floor of, and which floor.
+ *
+ * @generated from message sleepers.v1.BuildingFloor
+ */
+export type BuildingFloor = Message<"sleepers.v1.BuildingFloor"> & {
+  /**
+   * the building's name
+   *
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * its floors' names, ground floor first
+   *
+   * @generated from field: repeated string floors = 2;
+   */
+  floors: string[];
+
+  /**
+   * this map's floor, an index into floors
+   *
+   * @generated from field: uint32 floor = 3;
+   */
+  floor: number;
+
+  /**
+   * whether a lift stops on every floor
+   *
+   * @generated from field: bool has_lift = 4;
+   */
+  hasLift: boolean;
+};
+
+/**
+ * Describes the message sleepers.v1.BuildingFloor.
+ * Use `create(BuildingFloorSchema)` to create a new message.
+ */
+export const BuildingFloorSchema: GenMessage<BuildingFloor> = /*@__PURE__*/
+  messageDesc(file_sleepers_v1_world, 2);
+
+/**
+ * Prop is a piece of static scenery on a map (ADR 074): an ordinary
+ * building, a ship standing at the spaceport, a lamp. kind says what to
+ * draw ("building", "ship", "lamp-sodium" and so on); the client decides
+ * how each kind looks.
+ *
+ * @generated from message sleepers.v1.Prop
+ */
+export type Prop = Message<"sleepers.v1.Prop"> & {
+  /**
+   * @generated from field: string kind = 1;
+   */
+  kind: string;
+
+  /**
+   * the north-west tile of its footprint
+   *
+   * @generated from field: int32 x = 2;
+   */
+  x: number;
+
+  /**
+   * @generated from field: int32 y = 3;
+   */
+  y: number;
+
+  /**
+   * its footprint, in tiles
+   *
+   * @generated from field: uint32 width = 4;
+   */
+  width: number;
+
+  /**
+   * @generated from field: uint32 depth = 5;
+   */
+  depth: number;
+
+  /**
+   * how tall, in tenths of a tile (a building's height)
+   *
+   * @generated from field: uint32 height = 6;
+   */
+  height: number;
+
+  /**
+   * quarter turns clockwise, 0 to 3
+   *
+   * @generated from field: uint32 rotation = 7;
+   */
+  rotation: number;
+
+  /**
+   * a name to show over it; empty for none
+   *
+   * @generated from field: string label = 8;
+   */
+  label: string;
+};
+
+/**
+ * Describes the message sleepers.v1.Prop.
+ * Use `create(PropSchema)` to create a new message.
+ */
+export const PropSchema: GenMessage<Prop> = /*@__PURE__*/
+  messageDesc(file_sleepers_v1_world, 3);
 
 /**
  * TileType is one entry of the data-defined tile catalogue (ADR 035). Tiles
@@ -127,7 +259,7 @@ export type TileType = Message<"sleepers.v1.TileType"> & {
  * Use `create(TileTypeSchema)` to create a new message.
  */
 export const TileTypeSchema: GenMessage<TileType> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_world, 2);
+  messageDesc(file_sleepers_v1_world, 4);
 
 /**
  * Position is a tile coordinate on a map. One tile is about 1 m.
@@ -152,7 +284,7 @@ export type Position = Message<"sleepers.v1.Position"> & {
  * Use `create(PositionSchema)` to create a new message.
  */
 export const PositionSchema: GenMessage<Position> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_world, 3);
+  messageDesc(file_sleepers_v1_world, 5);
 
 /**
  * @generated from message sleepers.v1.Character
@@ -191,7 +323,7 @@ export type Character = Message<"sleepers.v1.Character"> & {
  * Use `create(CharacterSchema)` to create a new message.
  */
 export const CharacterSchema: GenMessage<Character> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_world, 4);
+  messageDesc(file_sleepers_v1_world, 6);
 
 /**
  * Direction of a step (ADR 023: 8 ways).
