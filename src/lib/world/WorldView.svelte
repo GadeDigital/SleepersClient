@@ -76,11 +76,16 @@
 
 <div class="world">
 	<EngineHost {pixelSize} {setup} />
+	{#key game.mapChanges}
+		<!-- Taking stairs, a lift or a door fades in the new map (ADR 074). -->
+		{#if game.mapChanges > 0}
+			<div class="map-fade" aria-hidden="true"></div>
+		{/if}
+	{/key}
 	<section class="view card">
 		<PixelSizeButtons value={pixelSize} onchange={setPixelSize} />
 		<p class="keys">
-			<b>WASD</b> or <b>arrows</b> walk up the screen · <b>Q / E</b> turn · <b>B</b> build ·
-			<b>X</b> take down · <b>L</b> sleep
+			<b>WASD</b> or <b>arrows</b> walk up the screen · <b>Q / E</b> turn · <b>L</b> sleep in a bed
 		</p>
 	</section>
 </div>
@@ -91,6 +96,23 @@
 		inset: 0;
 		overflow: hidden;
 		background: #05070d;
+	}
+
+	.map-fade {
+		position: absolute;
+		inset: 0;
+		background: #05070d;
+		pointer-events: none;
+		animation: map-fade 0.7s ease-out forwards;
+	}
+
+	@keyframes map-fade {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
 	}
 
 	.card {
@@ -138,6 +160,10 @@
 		position: static;
 	}
 
+	.world :global(.char-tag.ghost) {
+		opacity: 0.55;
+	}
+
 	.world :global(.char-tag.down) {
 		opacity: 0.5;
 	}
@@ -175,6 +201,50 @@
 		display: block;
 		height: 100%;
 		background: #e0a458;
+	}
+
+	/* A transmission on its console (ADR 072): a terminal, not a bubble. */
+	.world :global(.terminal) {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: min(24em, 70vw);
+		padding: 0.7em 0.9em;
+		background: rgba(3, 12, 14, 0.92);
+		border: 1px solid #2f8f9a;
+		box-shadow: 0 0 18px rgba(79, 214, 208, 0.18);
+		color: #b8ece8;
+		font:
+			400 11px/1.5 'IBM Plex Mono',
+			ui-monospace,
+			monospace;
+		will-change: transform;
+		transition: opacity 1s;
+	}
+
+	.world :global(.terminal.closing) {
+		opacity: 0;
+	}
+
+	.world :global(.terminal p) {
+		margin: 0 0 0.45em;
+		opacity: 0;
+		animation: terminal-line 0.5s steps(4) forwards;
+	}
+
+	.world :global(.terminal p:first-child) {
+		color: #4fd6d0;
+		letter-spacing: 0.08em;
+	}
+
+	.world :global(.terminal p:last-child) {
+		margin-bottom: 0;
+	}
+
+	@keyframes terminal-line {
+		to {
+			opacity: 1;
+		}
 	}
 
 	.world :global(.bubble.muffled) {

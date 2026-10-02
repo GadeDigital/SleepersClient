@@ -89,11 +89,19 @@
 				style:top="{rows.tops[range[0] + i]}px"
 				{@attach measure(entry.seq)}
 			>
-				<span class="who">
-					<span class="speaker">{entry.speaker}</span>
-					{#if VERBS[entry.mode]}<span class="how">{VERBS[entry.mode]}</span>{/if}
-				</span>
-				<span class="text">{entry.text}</span>
+				{#if entry.kind === 'transmission'}
+					<!-- Not speech: nobody nearby said it (ADR 072). -->
+					<span class="transmission">
+						<span class="tag">Transmission · {entry.speaker}</span>
+						<span class="lines">{entry.text}</span>
+					</span>
+				{:else}
+					<span class="who">
+						<span class="speaker">{entry.speaker}</span>
+						{#if VERBS[entry.mode]}<span class="how">{VERBS[entry.mode]}</span>{/if}
+					</span>
+					<span class="text">{entry.text}</span>
+				{/if}
 			</p>
 		{/each}
 	</div>
@@ -161,6 +169,31 @@
 
 	.yell .text {
 		font-weight: 700;
+	}
+
+	.transmission {
+		display: block;
+		margin: 0.2rem 0;
+		padding: 0.3rem 0.5rem;
+		border-left: 2px solid #2f8f9a;
+		background: rgb(3 12 14 / 0.6);
+		color: #b8ece8;
+		font:
+			400 0.8rem/1.45 'IBM Plex Mono',
+			ui-monospace,
+			monospace;
+	}
+
+	.transmission .tag {
+		display: block;
+		color: #4fd6d0;
+		font-size: 0.7rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.transmission .lines {
+		white-space: pre-line;
 	}
 
 	.muffled .text {

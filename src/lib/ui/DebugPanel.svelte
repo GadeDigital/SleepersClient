@@ -13,8 +13,12 @@
 
 	let { game, onteleport, onoverview }: Props = $props();
 
-	/** CSS pixels per overview cell (one chunk). */
-	const CELL = 3;
+	/** CSS pixels per overview cell, so the overview fits about 320 px. */
+	const cell = $derived(
+		game.overview ? Math.max(1, Math.min(3, Math.floor(320 / game.overview.width))) : 3
+	);
+	/** Tiles per overview cell: a chunk on a planet, a tile on an authored map. */
+	const cellTiles = $derived(game.overview?.cellTiles ?? 32);
 
 	let open = $state(false);
 	let targetX = $state(0);
@@ -25,7 +29,6 @@
 
 	function toggle() {
 		open = !open;
-		if (open && !game.overview) onoverview();
 		if (open && me) {
 			targetX = me.x;
 			targetY = me.y;
@@ -37,6 +40,11 @@
 		event.preventDefault();
 		toggle();
 	}
+
+	// The overview is of the map you are on; after stairs or a lift, ask again.
+	$effect(() => {
+		if (open && !game.overview) onoverview();
+	});
 
 	/** Paints the overview whenever it or the tile colours change. */
 	const paint: Attachment<HTMLCanvasElement> = (canvas) => {
@@ -53,11 +61,14 @@
 		});
 	};
 
-	/** Teleports to the middle of the chunk clicked on. */
+	/** Teleports to the middle of the cell clicked on. */
 	function onclick(event: MouseEvent & { currentTarget: HTMLCanvasElement }) {
-		const cx = Math.floor(event.offsetX / CELL);
-		const cy = Math.floor(event.offsetY / CELL);
-		onteleport(cx * chunkSize + chunkSize / 2, cy * chunkSize + chunkSize / 2);
+		const cx = Math.floor(event.offsetX / cell);
+		const cy = Math.floor(event.offsetY / cell);
+		onteleport(
+			cx * cellTiles + Math.floor(cellTiles / 2),
+			cy * cellTiles + Math.floor(cellTiles / 2)
+		);
 	}
 
 	function submit(event: SubmitEvent) {
@@ -86,21 +97,23 @@
 				<canvas
 					width={game.overview.width}
 					height={game.overview.height}
-					style:width="{game.overview.width * CELL}px"
-					style:height="{game.overview.height * CELL}px"
+					style:width="{game.overview.width * cell}px"
+					style:height="{game.overview.height * cell}px"
 					{@attach paint}
 					{onclick}
-					title="Click to teleport to that chunk"
+					title="Click to teleport there"
 				></canvas>
 				{#if me}
 					<span
 						class="you"
-						style:left="{Math.floor(me.x / chunkSize) * CELL}px"
-						style:top="{Math.floor(me.y / chunkSize) * CELL}px"
+						style:left="{Math.floor(me.x / cellTiles) * cell}px"
+						style:top="{Math.floor(me.y / cellTiles) * cell}px"
+						style:width="{cell}px"
+						style:height="{cell}px"
 					></span>
 				{/if}
 			</div>
-			<p class="hint">Planet overview, one pixel block per chunk, fog of war ignored.</p>
+			<p class="hint">Overview of this map, fog of war ignored.</p>
 		{:else}
 			<p>Waiting for the overview…</p>
 		{/if}
@@ -163,8 +176,6 @@
 
 	.you {
 		position: absolute;
-		width: 3px;
-		height: 3px;
 		outline: 2px solid #f2f2f2;
 		pointer-events: none;
 	}

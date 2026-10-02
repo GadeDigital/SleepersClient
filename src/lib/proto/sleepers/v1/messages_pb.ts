@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file sleepers/v1/messages.proto.
  */
 export const file_sleepers_v1_messages: GenFile = /*@__PURE__*/
-  fileDesc("ChpzbGVlcGVycy92MS9tZXNzYWdlcy5wcm90bxILc2xlZXBlcnMudjEiwAIKDUNsaWVudE1lc3NhZ2USIQoEcGluZxgBIAEoCzIRLnNsZWVwZXJzLnYxLlBpbmdIABIhCgRqb2luGAIgASgLMhEuc2xlZXBlcnMudjEuSm9pbkgAEiEKBG1vdmUYAyABKAsyES5zbGVlcGVycy52MS5Nb3ZlSAASHwoDc2F5GAQgASgLMhAuc2xlZXBlcnMudjEuU2F5SAASNAoOZGVidWdfdGVsZXBvcnQYBSABKAsyGi5zbGVlcGVycy52MS5EZWJ1Z1RlbGVwb3J0SAASQwoWZGVidWdfb3ZlcnZpZXdfcmVxdWVzdBgGIAEoCzIhLnNsZWVwZXJzLnYxLkRlYnVnT3ZlcnZpZXdSZXF1ZXN0SAASHwoDYWN0GAcgASgLMhAuc2xlZXBlcnMudjEuQWN0SABCCQoHbWVzc2FnZSKlBgoNU2VydmVyTWVzc2FnZRIhCgRwb25nGAEgASgLMhEuc2xlZXBlcnMudjEuUG9uZ0gAEjQKDndvcmxkX3NuYXBzaG90GAIgASgLMhouc2xlZXBlcnMudjEuV29ybGRTbmFwc2hvdEgAEjwKEmNoYXJhY3Rlcl9hcHBlYXJlZBgDIAEoCzIeLnNsZWVwZXJzLnYxLkNoYXJhY3RlckFwcGVhcmVkSAASMAoMc3RlcF9zdGFydGVkGAQgASgLMhguc2xlZXBlcnMudjEuU3RlcFN0YXJ0ZWRIABI2Cg9jaGFyYWN0ZXJfbW92ZWQYBSABKAsyGy5zbGVlcGVycy52MS5DaGFyYWN0ZXJNb3ZlZEgAEkUKF2NoYXJhY3Rlcl9zdGF0ZV9jaGFuZ2VkGAYgASgLMiIuc2xlZXBlcnMudjEuQ2hhcmFjdGVyU3RhdGVDaGFuZ2VkSAASNAoOY2hhcmFjdGVyX2xlZnQYByABKAsyGi5zbGVlcGVycy52MS5DaGFyYWN0ZXJMZWZ0SAASOAoQY29tbWFuZF9yZWplY3RlZBgIIAEoCzIcLnNsZWVwZXJzLnYxLkNvbW1hbmRSZWplY3RlZEgAEioKCXRpY2tfc3luYxgJIAEoCzIVLnNsZWVwZXJzLnYxLlRpY2tTeW5jSAASIwoFaGVhcmQYCiABKAsyEi5zbGVlcGVycy52MS5IZWFyZEgAEiwKCmNodW5rX2RhdGEYCyABKAsyFi5zbGVlcGVycy52MS5DaHVua0RhdGFIABI0Cg5jaHVua191bmxvYWRlZBgMIAEoCzIaLnNsZWVwZXJzLnYxLkNodW5rVW5sb2FkZWRIABI0Cg5kZWJ1Z19vdmVydmlldxgNIAEoCzIaLnNsZWVwZXJzLnYxLkRlYnVnT3ZlcnZpZXdIABI0Cg5hY3Rpb25fc3RhcnRlZBgOIAEoCzIaLnNsZWVwZXJzLnYxLkFjdGlvblN0YXJ0ZWRIABIwCgx0aWxlX2NoYW5nZWQYDyABKAsyGC5zbGVlcGVycy52MS5UaWxlQ2hhbmdlZEgAQgkKB21lc3NhZ2UiQAoESm9pbhIMCgRuYW1lGAEgASgJEhQKDGFjY2Vzc190b2tlbhgCIAEoCRIUCgxjaGFyYWN0ZXJfaWQYAyABKAMiMQoETW92ZRIpCglkaXJlY3Rpb24YASABKA4yFi5zbGVlcGVycy52MS5EaXJlY3Rpb24iOgoDU2F5EiUKBG1vZGUYASABKA4yFy5zbGVlcGVycy52MS5TcGVlY2hNb2RlEgwKBHRleHQYAiABKAkiVwoDQWN0EiUKBGtpbmQYASABKA4yFy5zbGVlcGVycy52MS5BY3Rpb25LaW5kEikKCWRpcmVjdGlvbhgCIAEoDjIWLnNsZWVwZXJzLnYxLkRpcmVjdGlvbiKZAQoNQWN0aW9uU3RhcnRlZBIUCgxjaGFyYWN0ZXJfaWQYASABKA0SJQoEa2luZBgCIAEoDjIXLnNsZWVwZXJzLnYxLkFjdGlvbktpbmQSJQoGdGFyZ2V0GAMgASgLMhUuc2xlZXBlcnMudjEuUG9zaXRpb24SEgoKc3RhcnRfdGljaxgEIAEoBBIQCghlbmRfdGljaxgFIAEoBCJpCgtUaWxlQ2hhbmdlZBIgCgNtYXAYASABKAsyEy5zbGVlcGVycy52MS5NYXBSZWYSJwoIcG9zaXRpb24YAiABKAsyFS5zbGVlcGVycy52MS5Qb3NpdGlvbhIPCgd0aWxlX2lkGAMgASgNIrgBCg1Xb3JsZFNuYXBzaG90EhkKEXlvdXJfY2hhcmFjdGVyX2lkGAEgASgNEgwKBHRpY2sYAiABKAQSKgoKY2hhcmFjdGVycxgEIAMoCzIWLnNsZWVwZXJzLnYxLkNoYXJhY3RlchIhCgNtYXAYBSABKAsyFC5zbGVlcGVycy52MS5NYXBJbmZvEikKCnRpbGVfdHlwZXMYBiADKAsyFS5zbGVlcGVycy52MS5UaWxlVHlwZUoECAMQBCJvCglDaHVua0RhdGESIAoDbWFwGAEgASgLMhMuc2xlZXBlcnMudjEuTWFwUmVmEgoKAmN4GAIgASgFEgoKAmN5GAMgASgFEg0KBXRpbGVzGAQgAygNEhkKEWdlbmVyYXRvcl92ZXJzaW9uGAUgASgNIkkKDUNodW5rVW5sb2FkZWQSIAoDbWFwGAEgASgLMhMuc2xlZXBlcnMudjEuTWFwUmVmEgoKAmN4GAIgASgFEgoKAmN5GAMgASgFIj4KEUNoYXJhY3RlckFwcGVhcmVkEikKCWNoYXJhY3RlchgBIAEoCzIWLnNsZWVwZXJzLnYxLkNoYXJhY3RlciKUAQoLU3RlcFN0YXJ0ZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEiMKBGZyb20YAiABKAsyFS5zbGVlcGVycy52MS5Qb3NpdGlvbhIhCgJ0bxgDIAEoCzIVLnNsZWVwZXJzLnYxLlBvc2l0aW9uEhIKCnN0YXJ0X3RpY2sYBCABKAQSEwoLYXJyaXZlX3RpY2sYBSABKAQiXQoOQ2hhcmFjdGVyTW92ZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEicKCHBvc2l0aW9uGAIgASgLMhUuc2xlZXBlcnMudjEuUG9zaXRpb24SDAoEdGljaxgDIAEoBCJZChVDaGFyYWN0ZXJTdGF0ZUNoYW5nZWQSFAoMY2hhcmFjdGVyX2lkGAEgASgNEioKBXN0YXRlGAIgASgOMhsuc2xlZXBlcnMudjEuQ2hhcmFjdGVyU3RhdGUiJQoNQ2hhcmFjdGVyTGVmdBIUCgxjaGFyYWN0ZXJfaWQYASABKA0iGAoIVGlja1N5bmMSDAoEdGljaxgBIAEoBCJvCgVIZWFyZBISCgpzcGVha2VyX2lkGAEgASgNEiUKBG1vZGUYAiABKA4yFy5zbGVlcGVycy52MS5TcGVlY2hNb2RlEgwKBHRleHQYAyABKAkSDwoHbXVmZmxlZBgEIAEoCBIMCgR0aWNrGAUgASgEIiEKD0NvbW1hbmRSZWplY3RlZBIOCgZyZWFzb24YASABKAkiJQoNRGVidWdUZWxlcG9ydBIJCgF4GAEgASgFEgkKAXkYAiABKAUiFgoURGVidWdPdmVydmlld1JlcXVlc3QiegoNRGVidWdPdmVydmlldxIgCgNtYXAYASABKAsyEy5zbGVlcGVycy52MS5NYXBSZWYSDQoFd2lkdGgYAiABKA0SDgoGaGVpZ2h0GAMgASgNEg0KBWNlbGxzGAQgAygNEhkKEWdlbmVyYXRvcl92ZXJzaW9uGAUgASgNQjRaMnNsZWVwZXJzL3NlcnZlci9pbnRlcm5hbC9wYi9zbGVlcGVycy92MTtzbGVlcGVyc3YxYgZwcm90bzM", [file_sleepers_v1_ping, file_sleepers_v1_world]);
+  fileDesc("ChpzbGVlcGVycy92MS9tZXNzYWdlcy5wcm90bxILc2xlZXBlcnMudjEilgMKDUNsaWVudE1lc3NhZ2USIQoEcGluZxgBIAEoCzIRLnNsZWVwZXJzLnYxLlBpbmdIABIhCgRqb2luGAIgASgLMhEuc2xlZXBlcnMudjEuSm9pbkgAEiEKBG1vdmUYAyABKAsyES5zbGVlcGVycy52MS5Nb3ZlSAASHwoDc2F5GAQgASgLMhAuc2xlZXBlcnMudjEuU2F5SAASNAoOZGVidWdfdGVsZXBvcnQYBSABKAsyGi5zbGVlcGVycy52MS5EZWJ1Z1RlbGVwb3J0SAASQwoWZGVidWdfb3ZlcnZpZXdfcmVxdWVzdBgGIAEoCzIhLnNsZWVwZXJzLnYxLkRlYnVnT3ZlcnZpZXdSZXF1ZXN0SAASHwoDYWN0GAcgASgLMhAuc2xlZXBlcnMudjEuQWN0SAASKAoIdXNlX2xpZnQYCCABKAsyFC5zbGVlcGVycy52MS5Vc2VMaWZ0SAASKgoJc2V0X2dob3N0GAkgASgLMhUuc2xlZXBlcnMudjEuU2V0R2hvc3RIAEIJCgdtZXNzYWdlIoYHCg1TZXJ2ZXJNZXNzYWdlEiEKBHBvbmcYASABKAsyES5zbGVlcGVycy52MS5Qb25nSAASNAoOd29ybGRfc25hcHNob3QYAiABKAsyGi5zbGVlcGVycy52MS5Xb3JsZFNuYXBzaG90SAASPAoSY2hhcmFjdGVyX2FwcGVhcmVkGAMgASgLMh4uc2xlZXBlcnMudjEuQ2hhcmFjdGVyQXBwZWFyZWRIABIwCgxzdGVwX3N0YXJ0ZWQYBCABKAsyGC5zbGVlcGVycy52MS5TdGVwU3RhcnRlZEgAEjYKD2NoYXJhY3Rlcl9tb3ZlZBgFIAEoCzIbLnNsZWVwZXJzLnYxLkNoYXJhY3Rlck1vdmVkSAASRQoXY2hhcmFjdGVyX3N0YXRlX2NoYW5nZWQYBiABKAsyIi5zbGVlcGVycy52MS5DaGFyYWN0ZXJTdGF0ZUNoYW5nZWRIABI0Cg5jaGFyYWN0ZXJfbGVmdBgHIAEoCzIaLnNsZWVwZXJzLnYxLkNoYXJhY3RlckxlZnRIABI4ChBjb21tYW5kX3JlamVjdGVkGAggASgLMhwuc2xlZXBlcnMudjEuQ29tbWFuZFJlamVjdGVkSAASKgoJdGlja19zeW5jGAkgASgLMhUuc2xlZXBlcnMudjEuVGlja1N5bmNIABIjCgVoZWFyZBgKIAEoCzISLnNsZWVwZXJzLnYxLkhlYXJkSAASLAoKY2h1bmtfZGF0YRgLIAEoCzIWLnNsZWVwZXJzLnYxLkNodW5rRGF0YUgAEjQKDmNodW5rX3VubG9hZGVkGAwgASgLMhouc2xlZXBlcnMudjEuQ2h1bmtVbmxvYWRlZEgAEjQKDmRlYnVnX292ZXJ2aWV3GA0gASgLMhouc2xlZXBlcnMudjEuRGVidWdPdmVydmlld0gAEjQKDmFjdGlvbl9zdGFydGVkGA4gASgLMhouc2xlZXBlcnMudjEuQWN0aW9uU3RhcnRlZEgAEjAKDHRpbGVfY2hhbmdlZBgPIAEoCzIYLnNsZWVwZXJzLnYxLlRpbGVDaGFuZ2VkSAASMQoMdHJhbnNtaXNzaW9uGBAgASgLMhkuc2xlZXBlcnMudjEuVHJhbnNtaXNzaW9uSAASLAoKZ2hvc3RfbW9kZRgRIAEoCzIWLnNsZWVwZXJzLnYxLkdob3N0TW9kZUgAQgkKB21lc3NhZ2UiQAoESm9pbhIMCgRuYW1lGAEgASgJEhQKDGFjY2Vzc190b2tlbhgCIAEoCRIUCgxjaGFyYWN0ZXJfaWQYAyABKAMiMQoETW92ZRIpCglkaXJlY3Rpb24YASABKA4yFi5zbGVlcGVycy52MS5EaXJlY3Rpb24iOgoDU2F5EiUKBG1vZGUYASABKA4yFy5zbGVlcGVycy52MS5TcGVlY2hNb2RlEgwKBHRleHQYAiABKAkiVwoDQWN0EiUKBGtpbmQYASABKA4yFy5zbGVlcGVycy52MS5BY3Rpb25LaW5kEikKCWRpcmVjdGlvbhgCIAEoDjIWLnNsZWVwZXJzLnYxLkRpcmVjdGlvbiIYCgdVc2VMaWZ0Eg0KBWZsb29yGAEgASgNIpkBCg1BY3Rpb25TdGFydGVkEhQKDGNoYXJhY3Rlcl9pZBgBIAEoDRIlCgRraW5kGAIgASgOMhcuc2xlZXBlcnMudjEuQWN0aW9uS2luZBIlCgZ0YXJnZXQYAyABKAsyFS5zbGVlcGVycy52MS5Qb3NpdGlvbhISCgpzdGFydF90aWNrGAQgASgEEhAKCGVuZF90aWNrGAUgASgEImkKC1RpbGVDaGFuZ2VkEiAKA21hcBgBIAEoCzITLnNsZWVwZXJzLnYxLk1hcFJlZhInCghwb3NpdGlvbhgCIAEoCzIVLnNsZWVwZXJzLnYxLlBvc2l0aW9uEg8KB3RpbGVfaWQYAyABKA0iuAEKDVdvcmxkU25hcHNob3QSGQoReW91cl9jaGFyYWN0ZXJfaWQYASABKA0SDAoEdGljaxgCIAEoBBIqCgpjaGFyYWN0ZXJzGAQgAygLMhYuc2xlZXBlcnMudjEuQ2hhcmFjdGVyEiEKA21hcBgFIAEoCzIULnNsZWVwZXJzLnYxLk1hcEluZm8SKQoKdGlsZV90eXBlcxgGIAMoCzIVLnNsZWVwZXJzLnYxLlRpbGVUeXBlSgQIAxAEIo8BCglDaHVua0RhdGESIAoDbWFwGAEgASgLMhMuc2xlZXBlcnMudjEuTWFwUmVmEgoKAmN4GAIgASgFEgoKAmN5GAMgASgFEg0KBXRpbGVzGAQgAygNEhkKEWdlbmVyYXRvcl92ZXJzaW9uGAUgASgNEg8KB2hlaWdodHMYBiADKA0SDQoFZWRnZXMYByADKA0iSQoNQ2h1bmtVbmxvYWRlZBIgCgNtYXAYASABKAsyEy5zbGVlcGVycy52MS5NYXBSZWYSCgoCY3gYAiABKAUSCgoCY3kYAyABKAUiPgoRQ2hhcmFjdGVyQXBwZWFyZWQSKQoJY2hhcmFjdGVyGAEgASgLMhYuc2xlZXBlcnMudjEuQ2hhcmFjdGVyIpQBCgtTdGVwU3RhcnRlZBIUCgxjaGFyYWN0ZXJfaWQYASABKA0SIwoEZnJvbRgCIAEoCzIVLnNsZWVwZXJzLnYxLlBvc2l0aW9uEiEKAnRvGAMgASgLMhUuc2xlZXBlcnMudjEuUG9zaXRpb24SEgoKc3RhcnRfdGljaxgEIAEoBBITCgthcnJpdmVfdGljaxgFIAEoBCJdCg5DaGFyYWN0ZXJNb3ZlZBIUCgxjaGFyYWN0ZXJfaWQYASABKA0SJwoIcG9zaXRpb24YAiABKAsyFS5zbGVlcGVycy52MS5Qb3NpdGlvbhIMCgR0aWNrGAMgASgEIlkKFUNoYXJhY3RlclN0YXRlQ2hhbmdlZBIUCgxjaGFyYWN0ZXJfaWQYASABKA0SKgoFc3RhdGUYAiABKA4yGy5zbGVlcGVycy52MS5DaGFyYWN0ZXJTdGF0ZSIlCg1DaGFyYWN0ZXJMZWZ0EhQKDGNoYXJhY3Rlcl9pZBgBIAEoDSIYCghUaWNrU3luYxIMCgR0aWNrGAEgASgEIm8KBUhlYXJkEhIKCnNwZWFrZXJfaWQYASABKA0SJQoEbW9kZRgCIAEoDjIXLnNsZWVwZXJzLnYxLlNwZWVjaE1vZGUSDAoEdGV4dBgDIAEoCRIPCgdtdWZmbGVkGAQgASgIEgwKBHRpY2sYBSABKAQiIQoPQ29tbWFuZFJlamVjdGVkEg4KBnJlYXNvbhgBIAEoCSIlCg1EZWJ1Z1RlbGVwb3J0EgkKAXgYASABKAUSCQoBeRgCIAEoBSIWChREZWJ1Z092ZXJ2aWV3UmVxdWVzdCKOAQoNRGVidWdPdmVydmlldxIgCgNtYXAYASABKAsyEy5zbGVlcGVycy52MS5NYXBSZWYSDQoFd2lkdGgYAiABKA0SDgoGaGVpZ2h0GAMgASgNEg0KBWNlbGxzGAQgAygNEhkKEWdlbmVyYXRvcl92ZXJzaW9uGAUgASgNEhIKCmNlbGxfdGlsZXMYBiABKA0ikQEKDFRyYW5zbWlzc2lvbhIOCgZzZW5kZXIYASABKAkSDQoFbGluZXMYAiADKAkSDwoHcHVycG9zZRgDIAEoCRIgCgNtYXAYBCABKAsyEy5zbGVlcGVycy52MS5NYXBSZWYSIQoCYXQYBSABKAsyFS5zbGVlcGVycy52MS5Qb3NpdGlvbhIMCgR0aWNrGAYgASgEIhYKCFNldEdob3N0EgoKAm9uGAEgASgIIhcKCUdob3N0TW9kZRIKCgJvbhgBIAEoCEI0WjJzbGVlcGVycy9zZXJ2ZXIvaW50ZXJuYWwvcGIvc2xlZXBlcnMvdjE7c2xlZXBlcnN2MWIGcHJvdG8z", [file_sleepers_v1_ping, file_sleepers_v1_world]);
 
 /**
  * ClientMessage is the envelope for everything a client sends.
@@ -68,6 +68,18 @@ export type ClientMessage = Message<"sleepers.v1.ClientMessage"> & {
      */
     value: Act;
     case: "act";
+  } | {
+    /**
+     * @generated from field: sleepers.v1.UseLift use_lift = 8;
+     */
+    value: UseLift;
+    case: "useLift";
+  } | {
+    /**
+     * @generated from field: sleepers.v1.SetGhost set_ghost = 9;
+     */
+    value: SetGhost;
+    case: "setGhost";
   } | { case: undefined; value?: undefined };
 };
 
@@ -178,6 +190,18 @@ export type ServerMessage = Message<"sleepers.v1.ServerMessage"> & {
      */
     value: TileChanged;
     case: "tileChanged";
+  } | {
+    /**
+     * @generated from field: sleepers.v1.Transmission transmission = 16;
+     */
+    value: Transmission;
+    case: "transmission";
+  } | {
+    /**
+     * @generated from field: sleepers.v1.GhostMode ghost_mode = 17;
+     */
+    value: GhostMode;
+    case: "ghostMode";
   } | { case: undefined; value?: undefined };
 };
 
@@ -294,6 +318,27 @@ export const ActSchema: GenMessage<Act> = /*@__PURE__*/
   messageDesc(file_sleepers_v1_messages, 5);
 
 /**
+ * UseLift asks the lift you stand in to take you to another floor of its
+ * building (ADR 074); floor counts from the ground floor, 0. The ride takes
+ * a moment, then you arrive on that floor's lift tile.
+ *
+ * @generated from message sleepers.v1.UseLift
+ */
+export type UseLift = Message<"sleepers.v1.UseLift"> & {
+  /**
+   * @generated from field: uint32 floor = 1;
+   */
+  floor: number;
+};
+
+/**
+ * Describes the message sleepers.v1.UseLift.
+ * Use `create(UseLiftSchema)` to create a new message.
+ */
+export const UseLiftSchema: GenMessage<UseLift> = /*@__PURE__*/
+  messageDesc(file_sleepers_v1_messages, 6);
+
+/**
  * ActionStarted: a character began an action on target; it finishes on
  * end_tick, when TileChanged follows if it worked.
  *
@@ -331,7 +376,7 @@ export type ActionStarted = Message<"sleepers.v1.ActionStarted"> & {
  * Use `create(ActionStartedSchema)` to create a new message.
  */
 export const ActionStartedSchema: GenMessage<ActionStarted> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 6);
+  messageDesc(file_sleepers_v1_messages, 7);
 
 /**
  * TileChanged: a tile in a chunk you hold is now tile_id.
@@ -360,7 +405,7 @@ export type TileChanged = Message<"sleepers.v1.TileChanged"> & {
  * Use `create(TileChangedSchema)` to create a new message.
  */
 export const TileChangedSchema: GenMessage<TileChanged> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 7);
+  messageDesc(file_sleepers_v1_messages, 8);
 
 /**
  * WorldSnapshot is sent once after a successful join.
@@ -409,7 +454,7 @@ export type WorldSnapshot = Message<"sleepers.v1.WorldSnapshot"> & {
  * Use `create(WorldSnapshotSchema)` to create a new message.
  */
 export const WorldSnapshotSchema: GenMessage<WorldSnapshot> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 8);
+  messageDesc(file_sleepers_v1_messages, 9);
 
 /**
  * ChunkData: the tiles of one chunk, row by row, as tile ids. It is sent for
@@ -444,6 +489,25 @@ export type ChunkData = Message<"sleepers.v1.ChunkData"> & {
    * @generated from field: uint32 generator_version = 5;
    */
   generatorVersion: number;
+
+  /**
+   * Each tile's height level, 0 to 5, row by row like tiles (ADR 065). Empty
+   * on a map without heights: every tile is at level 0.
+   *
+   * @generated from field: repeated uint32 heights = 6;
+   */
+  heights: number[];
+
+  /**
+   * Each tile's edges, row by row like tiles (ADR 074). A tile describes its
+   * own east and south edges; its west and north edges are its neighbours'.
+   * Bits: 1 a wall on the east edge, 2 a wall on the south edge, 4 a
+   * doorway on the east edge, 8 a doorway on the south edge. Empty on a map
+   * without edge walls.
+   *
+   * @generated from field: repeated uint32 edges = 7;
+   */
+  edges: number[];
 };
 
 /**
@@ -451,7 +515,7 @@ export type ChunkData = Message<"sleepers.v1.ChunkData"> & {
  * Use `create(ChunkDataSchema)` to create a new message.
  */
 export const ChunkDataSchema: GenMessage<ChunkData> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 9);
+  messageDesc(file_sleepers_v1_messages, 10);
 
 /**
  * ChunkUnloaded: the server no longer keeps you up to date on this chunk;
@@ -481,7 +545,7 @@ export type ChunkUnloaded = Message<"sleepers.v1.ChunkUnloaded"> & {
  * Use `create(ChunkUnloadedSchema)` to create a new message.
  */
 export const ChunkUnloadedSchema: GenMessage<ChunkUnloaded> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 10);
+  messageDesc(file_sleepers_v1_messages, 11);
 
 /**
  * CharacterAppeared: a character came into view (joined or entered the room).
@@ -500,7 +564,7 @@ export type CharacterAppeared = Message<"sleepers.v1.CharacterAppeared"> & {
  * Use `create(CharacterAppearedSchema)` to create a new message.
  */
 export const CharacterAppearedSchema: GenMessage<CharacterAppeared> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 11);
+  messageDesc(file_sleepers_v1_messages, 12);
 
 /**
  * StepStarted: a character began a step. The position changes on arrive_tick,
@@ -540,7 +604,7 @@ export type StepStarted = Message<"sleepers.v1.StepStarted"> & {
  * Use `create(StepStartedSchema)` to create a new message.
  */
 export const StepStartedSchema: GenMessage<StepStarted> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 12);
+  messageDesc(file_sleepers_v1_messages, 13);
 
 /**
  * CharacterMoved: a character's position changed.
@@ -569,7 +633,7 @@ export type CharacterMoved = Message<"sleepers.v1.CharacterMoved"> & {
  * Use `create(CharacterMovedSchema)` to create a new message.
  */
 export const CharacterMovedSchema: GenMessage<CharacterMoved> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 13);
+  messageDesc(file_sleepers_v1_messages, 14);
 
 /**
  * @generated from message sleepers.v1.CharacterStateChanged
@@ -591,7 +655,7 @@ export type CharacterStateChanged = Message<"sleepers.v1.CharacterStateChanged">
  * Use `create(CharacterStateChangedSchema)` to create a new message.
  */
 export const CharacterStateChangedSchema: GenMessage<CharacterStateChanged> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 14);
+  messageDesc(file_sleepers_v1_messages, 15);
 
 /**
  * CharacterLeft: a character is no longer in view.
@@ -610,7 +674,7 @@ export type CharacterLeft = Message<"sleepers.v1.CharacterLeft"> & {
  * Use `create(CharacterLeftSchema)` to create a new message.
  */
 export const CharacterLeftSchema: GenMessage<CharacterLeft> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 15);
+  messageDesc(file_sleepers_v1_messages, 16);
 
 /**
  * TickSync carries the current server tick, sent to everyone once a second
@@ -631,7 +695,7 @@ export type TickSync = Message<"sleepers.v1.TickSync"> & {
  * Use `create(TickSyncSchema)` to create a new message.
  */
 export const TickSyncSchema: GenMessage<TickSync> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 16);
+  messageDesc(file_sleepers_v1_messages, 17);
 
 /**
  * Heard: speech reached you. In the muffled band words are dropped, each run
@@ -676,7 +740,7 @@ export type Heard = Message<"sleepers.v1.Heard"> & {
  * Use `create(HeardSchema)` to create a new message.
  */
 export const HeardSchema: GenMessage<Heard> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 17);
+  messageDesc(file_sleepers_v1_messages, 18);
 
 /**
  * CommandRejected: the last command could not be carried out.
@@ -696,7 +760,7 @@ export type CommandRejected = Message<"sleepers.v1.CommandRejected"> & {
  * Use `create(CommandRejectedSchema)` to create a new message.
  */
 export const CommandRejectedSchema: GenMessage<CommandRejected> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 18);
+  messageDesc(file_sleepers_v1_messages, 19);
 
 /**
  * DebugTeleport moves you at once to (x, y) on your current map, or to the
@@ -721,7 +785,7 @@ export type DebugTeleport = Message<"sleepers.v1.DebugTeleport"> & {
  * Use `create(DebugTeleportSchema)` to create a new message.
  */
 export const DebugTeleportSchema: GenMessage<DebugTeleport> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 19);
+  messageDesc(file_sleepers_v1_messages, 20);
 
 /**
  * DebugOverviewRequest asks for the whole planet overview, ignoring fog of
@@ -737,11 +801,12 @@ export type DebugOverviewRequest = Message<"sleepers.v1.DebugOverviewRequest"> &
  * Use `create(DebugOverviewRequestSchema)` to create a new message.
  */
 export const DebugOverviewRequestSchema: GenMessage<DebugOverviewRequest> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 20);
+  messageDesc(file_sleepers_v1_messages, 21);
 
 /**
- * DebugOverview: one tile id per chunk, row by row, sampled at each chunk's
- * centre.
+ * DebugOverview: the map you are on, one tile id per cell, row by row. On a
+ * planet a cell is a chunk, sampled at its centre; on an authored map, such
+ * as a site or a floor, a cell is one tile (ADR 074).
  *
  * @generated from message sleepers.v1.DebugOverview
  */
@@ -752,14 +817,14 @@ export type DebugOverview = Message<"sleepers.v1.DebugOverview"> & {
   map?: MapRef | undefined;
 
   /**
-   * in chunks
+   * in cells
    *
    * @generated from field: uint32 width = 2;
    */
   width: number;
 
   /**
-   * in chunks
+   * in cells
    *
    * @generated from field: uint32 height = 3;
    */
@@ -774,6 +839,13 @@ export type DebugOverview = Message<"sleepers.v1.DebugOverview"> & {
    * @generated from field: uint32 generator_version = 5;
    */
   generatorVersion: number;
+
+  /**
+   * tiles along each side of a cell
+   *
+   * @generated from field: uint32 cell_tiles = 6;
+   */
+  cellTiles: number;
 };
 
 /**
@@ -781,5 +853,102 @@ export type DebugOverview = Message<"sleepers.v1.DebugOverview"> & {
  * Use `create(DebugOverviewSchema)` to create a new message.
  */
 export const DebugOverviewSchema: GenMessage<DebugOverview> = /*@__PURE__*/
-  messageDesc(file_sleepers_v1_messages, 21);
+  messageDesc(file_sleepers_v1_messages, 22);
+
+/**
+ * Transmission: a message from something that is not a character near you,
+ * such as Hydra speaking through a facility's console (ADR 072). It is not
+ * speech: nobody nearby said it, and nobody nearby hears it. purpose says
+ * why it was sent ("first-wake" for a character's first wake; revival
+ * after death will have its own), so the client can show each its way.
+ *
+ * @generated from message sleepers.v1.Transmission
+ */
+export type Transmission = Message<"sleepers.v1.Transmission"> & {
+  /**
+   * who speaks, such as "HYDRA"
+   *
+   * @generated from field: string sender = 1;
+   */
+  sender: string;
+
+  /**
+   * what it says, line by line
+   *
+   * @generated from field: repeated string lines = 2;
+   */
+  lines: string[];
+
+  /**
+   * @generated from field: string purpose = 3;
+   */
+  purpose: string;
+
+  /**
+   * where it is shown, if anywhere: a console
+   *
+   * @generated from field: sleepers.v1.MapRef map = 4;
+   */
+  map?: MapRef | undefined;
+
+  /**
+   * @generated from field: sleepers.v1.Position at = 5;
+   */
+  at?: Position | undefined;
+
+  /**
+   * @generated from field: uint64 tick = 6;
+   */
+  tick: bigint;
+};
+
+/**
+ * Describes the message sleepers.v1.Transmission.
+ * Use `create(TransmissionSchema)` to create a new message.
+ */
+export const TransmissionSchema: GenMessage<Transmission> = /*@__PURE__*/
+  messageDesc(file_sleepers_v1_messages, 23);
+
+/**
+ * SetGhost asks to become a ghost, or to stop being one (ADR 073). Only an
+ * account with the admin role may; the server checks the role on every
+ * request, on any server. A ghost is invisible to everyone else, ignores
+ * height and walls, hears but cannot speak or act, and on stopping (or
+ * disconnecting) is back where it became one.
+ *
+ * @generated from message sleepers.v1.SetGhost
+ */
+export type SetGhost = Message<"sleepers.v1.SetGhost"> & {
+  /**
+   * @generated from field: bool on = 1;
+   */
+  on: boolean;
+};
+
+/**
+ * Describes the message sleepers.v1.SetGhost.
+ * Use `create(SetGhostSchema)` to create a new message.
+ */
+export const SetGhostSchema: GenMessage<SetGhost> = /*@__PURE__*/
+  messageDesc(file_sleepers_v1_messages, 24);
+
+/**
+ * GhostMode tells your own client that you are now a ghost, or no longer.
+ * Nobody else is ever told about a ghost.
+ *
+ * @generated from message sleepers.v1.GhostMode
+ */
+export type GhostMode = Message<"sleepers.v1.GhostMode"> & {
+  /**
+   * @generated from field: bool on = 1;
+   */
+  on: boolean;
+};
+
+/**
+ * Describes the message sleepers.v1.GhostMode.
+ * Use `create(GhostModeSchema)` to create a new message.
+ */
+export const GhostModeSchema: GenMessage<GhostMode> = /*@__PURE__*/
+  messageDesc(file_sleepers_v1_messages, 25);
 

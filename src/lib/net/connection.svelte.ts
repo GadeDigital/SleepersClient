@@ -93,6 +93,22 @@ export class Connection {
 		this.#send({ message: { case: 'say', value: { mode, text } } });
 	}
 
+	/**
+	 * Asks the lift you stand in to take you to a floor (ADR 074). The ride
+	 * is shown until the server sends the new floor.
+	 */
+	useLift(floor: number): void {
+		if (this.status !== 'joined') return;
+		this.game.liftTo = floor;
+		this.#send({ message: { case: 'useLift', value: { floor } } });
+	}
+
+	/** Asks to become a ghost, or stop being one; admins only (ADR 073). */
+	setGhost(on: boolean): void {
+		if (this.status !== 'joined') return;
+		this.#send({ message: { case: 'setGhost', value: { on } } });
+	}
+
 	/** DEVELOPMENT ONLY: jump to (x, y); the server must run with -dev-tools. */
 	debugTeleport(x: number, y: number): void {
 		if (this.status !== 'joined') return;

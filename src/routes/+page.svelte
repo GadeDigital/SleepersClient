@@ -4,6 +4,7 @@
 	import ChatInput from '$lib/ui/ChatInput.svelte';
 	import ChatLog from '$lib/ui/ChatLog.svelte';
 	import DebugPanel from '$lib/ui/DebugPanel.svelte';
+	import LiftPanel from '$lib/ui/LiftPanel.svelte';
 	import NamePrompt from '$lib/ui/NamePrompt.svelte';
 	import SignIn from '$lib/ui/SignIn.svelte';
 	import CharacterSelect from '$lib/ui/CharacterSelect.svelte';
@@ -109,10 +110,15 @@
 		onteleport={(x, y) => connection.debugTeleport(x, y)}
 		onoverview={() => connection.debugOverview()}
 	/>
+	<LiftPanel game={connection.game} onlift={(floor) => connection.useLift(floor)} />
 	<div class="hud">
 		{#if aiming !== null}
 			<p class="status aim" role="status">
 				{AIM_PROMPTS[aiming]}: hold a direction and let go (Esc cancels)
+			</p>
+		{:else if connection.game.ghost}
+			<p class="status ghost" role="status">
+				Ghost: nobody sees or hears you, and you cannot speak or act. /ghost to return.
 			</p>
 		{:else if connection.game.me?.state === CharacterState.ASLEEP}
 			<p class="status asleep" role="status">You are asleep. Move to get up.</p>
@@ -126,6 +132,7 @@
 		<ChatInput
 			waiting={connection.game.unspoken.length}
 			onsay={(mode, text) => connection.say(mode, text)}
+			onghost={() => connection.setGhost(!connection.game.ghost)}
 		/>
 	</div>
 {:else}
@@ -213,6 +220,10 @@
 
 	.status.aim {
 		color: #e0a458;
+	}
+
+	.status.ghost {
+		color: #9fb4d9;
 	}
 
 	.status.asleep {
