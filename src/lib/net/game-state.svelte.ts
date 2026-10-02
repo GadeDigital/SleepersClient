@@ -6,7 +6,7 @@ import {
 	type ActionKind,
 	type MapInfo,
 	type TileType,
-	type SpeechMode
+	SpeechMode
 } from '$lib/proto/sleepers/v1/world_pb';
 import { TickClock } from './tick-clock';
 
@@ -31,6 +31,10 @@ export interface Chunk {
 	cx: number;
 	cy: number;
 	tiles: Uint16Array;
+	/** Height levels 0 to 5, row by row (ADR 065); null on a flat map. */
+	heights: Uint8Array | null;
+	/** Edge bits, row by row (ADR 074; see EDGE_*); null without edge walls. */
+	edges: Uint8Array | null;
 	/** Counts changes since the chunk arrived, so the renderer redraws it. */
 	version: number;
 }
@@ -44,21 +48,43 @@ export interface ActionView {
 	endTick: number;
 }
 
+/** Edge bits of a tile, as ChunkData carries them (ADR 074). */
+export const EDGE_WALL_EAST = 1;
+export const EDGE_WALL_SOUTH = 2;
+export const EDGE_DOOR_EAST = 4;
+export const EDGE_DOOR_SOUTH = 8;
+
 export function chunkKey(cx: number, cy: number): string {
 	return `${cx},${cy}`;
 }
 
-/** DEVELOPMENT ONLY: the planet overview, one cell per chunk. */
+/** DEVELOPMENT ONLY: the overview of the map you are on. */
 export interface Overview {
 	width: number;
 	height: number;
 	cells: Uint16Array;
+	/** Tiles along each side of a cell: a chunk on a planet, 1 on a site. */
+	cellTiles: number;
 }
 
-/** One line in the chat log: something you heard, or said yourself. */
+/** A transmission: words from Hydra or the like, not speech (ADR 072). */
+export interface TransmissionView {
+	seq: number;
+	sender: string;
+	lines: string[];
+	purpose: string;
+	/** Where it is shown, if anywhere: a console on this map. */
+	at: { x: number; y: number } | null;
+}
+
+/**
+ * One line in the chat log: something you heard, or said yourself, or a
+ * transmission (ADR 072), which nobody nearby said.
+ */
 export interface ChatEntry {
 	/** Numbers entries in arrival order; unique for the session. */
 	seq: number;
+	kind: 'speech' | 'transmission';
 	speakerId: number;
 	/** The speaker's name when the line was heard. */
 	speaker: string;
@@ -122,6 +148,14 @@ export class GameState {
 	unspoken = $state<UnspokenLine[]>([]);
 	/** Everything heard, oldest first, up to LOG_LIMIT lines. */
 	log = $state.raw<ChatEntry[]>([]);
+	/** The latest transmission, shown in the world while it lasts. */
+	transmission = $state.raw<TransmissionView | null>(null);
+	/** Whether you are an admin's ghost (ADR 073). */
+	ghost = $state(false);
+	/** The floor a lift is taking you to; null when not riding (ADR 074). */
+	liftTo = $state<number | null>(null);
+	/** Counts arrivals on another map, so the view can fade between them. */
+	mapChanges = $state(0);
 	#seq = 0;
 
 	/** Not reactive: read every frame by the renderer. */
@@ -137,6 +171,13 @@ export class GameState {
 		switch (m.case) {
 			case 'worldSnapshot': {
 				this.clock.sample(Number(m.value.tick), nowMs);
+				// A snapshot of another map: you took stairs, a lift or a door.
+				const before = this.map?.ref?.address;
+				if (before !== undefined && before !== m.value.map?.ref?.address) {
+					this.mapChanges++;
+					this.overview = null; // it was of the old map
+				}
+				this.liftTo = null;
 				this.map = m.value.map ?? null;
 				// eslint-disable-next-line svelte/prefer-svelte-reactivity -- replaced whole, never mutated
 				this.tileTypes = new Map(m.value.tileTypes.map((t) => [t.id, t]));
@@ -192,6 +233,7 @@ export class GameState {
 				if (own) this.unspoken.shift();
 				const entry: ChatEntry = {
 					seq: ++this.#seq,
+					kind: 'speech',
 					speakerId: h.speakerId,
 					speaker: this.characters[h.speakerId]?.name ?? 'Someone',
 					mode: h.mode,
@@ -211,6 +253,8 @@ export class GameState {
 					cx: d.cx,
 					cy: d.cy,
 					tiles: Uint16Array.from(d.tiles),
+					heights: d.heights.length ? Uint8Array.from(d.heights) : null,
+					edges: d.edges.length ? Uint8Array.from(d.edges) : null,
 					version: 0
 				});
 				break;
@@ -247,13 +291,41 @@ export class GameState {
 				this.overview = {
 					width: m.value.width,
 					height: m.value.height,
-					cells: Uint16Array.from(m.value.cells)
+					cells: Uint16Array.from(m.value.cells),
+					cellTiles: m.value.cellTiles || (this.map?.chunkSize ?? 32)
 				};
 				break;
 			case 'tickSync':
 				this.clock.sample(Number(m.value.tick), nowMs);
 				break;
+			case 'transmission': {
+				const t = m.value;
+				const seq = ++this.#seq;
+				this.transmission = {
+					seq,
+					sender: t.sender,
+					lines: [...t.lines],
+					purpose: t.purpose,
+					at: t.at && t.map?.address === this.map?.ref?.address ? { x: t.at.x, y: t.at.y } : null
+				};
+				const entry: ChatEntry = {
+					seq,
+					kind: 'transmission',
+					speakerId: 0,
+					speaker: t.sender,
+					mode: SpeechMode.UNSPECIFIED,
+					text: t.lines.join('\n'),
+					muffled: false,
+					own: false
+				};
+				this.log = [...this.log.slice(-(LOG_LIMIT - 1)), entry];
+				break;
+			}
+			case 'ghostMode':
+				this.ghost = m.value.on;
+				break;
 			case 'commandRejected':
+				this.liftTo = null;
 				this.pendingMove = null;
 				this.rejection = m.value.reason;
 				this.rejections++;

@@ -5,11 +5,12 @@ import {
 	Color,
 	CylinderGeometry,
 	DirectionalLight,
+	GreaterDepth,
 	Group,
 	InstancedMesh,
 	LineBasicMaterial,
 	LineLoop,
-	Matrix4,
+	PlaneGeometry,
 	Mesh,
 	MeshBasicMaterial,
 	MeshLambertMaterial,
@@ -26,6 +27,11 @@ import {
 	type Texture
 } from 'three';
 import {
+	chunkKey,
+	EDGE_DOOR_EAST,
+	EDGE_DOOR_SOUTH,
+	EDGE_WALL_EAST,
+	EDGE_WALL_SOUTH,
 	isAsleep,
 	isUnconscious,
 	type CharacterView,
@@ -36,6 +42,7 @@ import {
 	ActionKind,
 	SpeechMode,
 	type Direction,
+	type MapInfo,
 	type TileType
 } from '$lib/proto/sleepers/v1/world_pb';
 import { bubbleDuration } from '$lib/ui/speech';
@@ -43,8 +50,10 @@ import { DELTAS } from '$lib/world/directions';
 import { glidePosition } from '$lib/world/glide';
 import { queuedTarget } from '$lib/world/move-input';
 import { wrapDelta } from '$lib/world/wrap';
-import type { Label } from '../labels';
+import { makeLabel, type Label } from '../labels';
 import { zTexture } from '../textures';
+import { Batch, noise, shape } from './batch';
+import { addProp, LEVEL, propBatches, type Lamp, type PropLabel } from './props';
 import type { View } from './View';
 
 /** The iso camera sits this far out and this high above its target (ADR 057). */
@@ -53,10 +62,17 @@ const CAM_UP = 24.5;
 /** Half the view's height in tiles, on landscape screens; portrait shows more. */
 const HALF_HEIGHT = 9;
 const PORTRAIT_HALF_WIDTH = 16;
+/** A building's floor is seen closer, as a cutaway (ADR 064). */
+const FLOOR_ZOOM = 1.3;
 
 /** Wall blocks are cut down so you can see into rooms (ADR 057). */
 const WALL_HEIGHT = 0.85;
 const CAP = 0.04;
+/** Walls on tile edges (ADR 055, ADR 074) are this thick. */
+const THIN = 0.1;
+const EDGE_WALL = 0x3e424c;
+/** Columns of ground on authored maps reach down to here (ADR 065). */
+const GROUND_BASE = -1;
 
 /** Light intensities times π match the reference mockup's r128 lighting. */
 const LIGHT = Math.PI;
@@ -87,17 +103,21 @@ const SLEEP_TAG = 'sleep';
 /** A sleeper lies on the bed's mattress. */
 const ON_BED = 0.38;
 
-/** A deterministic 0–1 value per tile, for the floor's slight colour variation. */
-function tileNoise(x: number, y: number): number {
-	let h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263);
-	h = Math.imul(h ^ (h >>> 13), 1274126177);
-	return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-}
+/** Blocking tiles drawn as ground plus their own shape, not as a wall block. */
+const SHAPED = ['water', 'solid', 'fixture', 'pod', 'fence', 'trees'];
 
 interface DrawnChunk {
 	group: Group;
 	version: number;
 	meshes: InstancedMesh[];
+}
+
+/** The props of the current map whose ground has arrived (ADR 074). */
+interface DrawnProps {
+	group: Group;
+	meshes: InstancedMesh[];
+	labels: Label[];
+	lamps: Lamp[];
 }
 
 /** One character's figure and its name, speech and "z" markers. */
@@ -108,6 +128,8 @@ interface Figure {
 	body: Mesh;
 	bodyMat: MeshLambertMaterial;
 	headMat: MeshLambertMaterial;
+	/** A faint silhouette drawn over scenery that hides the figure. */
+	xrayMat: MeshBasicMaterial;
 	zs: Sprite[];
 	ring: Mesh | null;
 	label: Label;
@@ -122,6 +144,8 @@ interface Figure {
 	drawn: { lying: 'no' | 'asleep' | 'unconscious'; isYou: boolean } | null;
 	/** Where the name points, reused every frame. */
 	head: Vector3;
+	/** The height of the ground drawn under it, eased between levels. */
+	ground: number;
 }
 
 /**
@@ -152,6 +176,14 @@ export class TileView implements View {
 	#camY = 0;
 
 	readonly #chunks = new Map<string, DrawnChunk>();
+	/** The map drawn; a new one clears everything (ADR 074). */
+	#mapAddress: string | undefined;
+	#props: DrawnProps | null = null;
+	#propsDirty = false;
+	/** The ground height under the camera's target, eased. */
+	#camGround = 0;
+	#zoom = 1;
+	#size = { width: 0, height: 0, bufferHeight: 0 };
 	readonly #figures = new Map<number, Figure>();
 	#seenSeq = 0;
 	/** Your step's direction, for facing, by character id. */
@@ -162,6 +194,10 @@ export class TileView implements View {
 	readonly #wallMat = new MeshLambertMaterial({ color: 0xffffff });
 	readonly #capMat = new MeshLambertMaterial({ color: 0xffffff });
 	readonly #slabMat = new MeshLambertMaterial({ color: 0x1a2030 });
+	readonly #detailMat = new MeshLambertMaterial({ color: 0xffffff });
+	readonly #glowMat = new MeshBasicMaterial({ color: 0xffffff });
+	readonly #cylinder = new CylinderGeometry(0.5, 0.5, 1, 10);
+	readonly #plane = new PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
 	readonly #bodyGeo = new CylinderGeometry(0.18, 0.22, 0.48, 8);
 	readonly #headGeo = new SphereGeometry(0.16, 8, 6);
 	readonly #visorGeo = new BoxGeometry(0.2, 0.06, 0.06);
@@ -179,9 +215,6 @@ export class TileView implements View {
 	readonly #hoverMat = new LineBasicMaterial({ color: AMBER });
 	readonly #aimDimMat = new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
 	readonly #aimMat = new LineBasicMaterial({ color: 0xffffff });
-	readonly #bedFrameMat = new MeshLambertMaterial({ color: 0x4a3f36 });
-	readonly #bedTopMat = new MeshLambertMaterial({ color: 0xffffff });
-	readonly #pillowMat = new MeshLambertMaterial({ color: 0xd8d4cc });
 	/** What the player is aiming, if anything; read every frame. */
 	aim: () => Aim | null = () => null;
 	/** World units per art pixel, for snapping the camera; 0 before the first resize. */
@@ -242,12 +275,14 @@ export class TileView implements View {
 	hover(ndc: { x: number; y: number } | null): void {
 		const tile = ndc ? this.#tileUnder(ndc.x, ndc.y) : null;
 		this.#hover.visible = tile !== null;
-		if (tile) this.#place(this.#hover, tile[0], tile[1], 0.03);
+		if (tile) this.#place(this.#hover, tile[0], tile[1], this.#groundAt(tile[0], tile[1]) + 0.03);
 	}
 
 	resize(width: number, height: number, bufferHeight: number): void {
+		this.#size = { width, height, bufferHeight };
+		if (!(width > 0 && height > 0)) return;
 		const aspect = width / height;
-		const halfH = Math.max(HALF_HEIGHT, PORTRAIT_HALF_WIDTH / aspect);
+		const halfH = Math.max(HALF_HEIGHT, PORTRAIT_HALF_WIDTH / aspect) / this.#zoom;
 		this.#unitsPerArtPixel = (2 * halfH) / bufferHeight;
 		this.camera.left = -halfH * aspect;
 		this.camera.right = halfH * aspect;
@@ -262,16 +297,26 @@ export class TileView implements View {
 		if (!active) return;
 		const nowMs = performance.now();
 		const tickNow = this.#game.clock.now(nowMs);
+		this.#checkMap();
 		this.#follow(tickNow);
 		this.#drawChunks();
+		this.#drawProps();
 		this.#drawCharacters(dt, t, tickNow, nowMs);
 		this.#drawQueued();
 		this.#drawAim(tickNow);
 		this.#yaw += (this.targetYaw - this.#yaw) * Math.min(1, dt * 6);
-		const target = this.#target.set(this.#sceneX(this.#camX), 0, this.#camY - this.#oy + 0.5);
+		const me = this.#game.me;
+		const ground = me ? this.#figures.get(me.id)?.ground : undefined;
+		if (ground !== undefined) this.#camGround = ground;
+		this.#ground.constant = -this.#camGround;
+		const target = this.#target.set(
+			this.#sceneX(this.#camX),
+			this.#camGround,
+			this.#camY - this.#oy + 0.5
+		);
 		this.camera.position.set(
 			target.x + Math.sin(this.#yaw) * CAM_OUT,
-			CAM_UP,
+			target.y + CAM_UP,
 			target.z + Math.cos(this.#yaw) * CAM_OUT
 		);
 		this.camera.lookAt(target);
@@ -301,8 +346,7 @@ export class TileView implements View {
 	}
 
 	dispose(): void {
-		for (const c of this.#chunks.values()) this.#disposeChunk(c);
-		this.#chunks.clear();
+		this.#clearMap();
 		for (const f of this.#figures.values()) this.#disposeFigure(f);
 		this.#figures.clear();
 		for (const g of [
@@ -312,6 +356,8 @@ export class TileView implements View {
 			this.#visorGeo,
 			this.#packGeo,
 			this.#ringGeo,
+			this.#cylinder,
+			this.#plane,
 			this.#queued.geometry,
 			this.#hover.geometry
 		])
@@ -328,9 +374,8 @@ export class TileView implements View {
 			this.#hoverMat,
 			this.#aimDimMat,
 			this.#aimMat,
-			this.#bedFrameMat,
-			this.#bedTopMat,
-			this.#pillowMat
+			this.#detailMat,
+			this.#glowMat
 		])
 			m.dispose();
 		this.#zTex.dispose();
@@ -391,6 +436,7 @@ export class TileView implements View {
 			if (!chunk || chunk.version !== drawn.version) {
 				this.#disposeChunk(drawn);
 				this.#chunks.delete(key);
+				this.#propsDirty = true;
 			}
 		}
 		for (const [key, chunk] of chunks) {
@@ -399,6 +445,7 @@ export class TileView implements View {
 				drawn = this.#buildChunk(chunk, size, this.#game.tileTypes);
 				this.#chunks.set(key, drawn);
 				this.scene.add(drawn.group);
+				this.#propsDirty = true;
 			}
 			// The chunk's centre decides which copy across the wrap is nearest.
 			const left = this.#sceneX(chunk.cx * size + size / 2) - 0.5 - size / 2;
@@ -407,77 +454,262 @@ export class TileView implements View {
 	}
 
 	/**
-	 * One chunk as instanced meshes (ADR 057): a dark slab, a floor plate on
-	 * every open tile in the catalogue's colour, and a low wall block with a
-	 * lighter cap on every tile that blocks movement.
+	 * One chunk as instanced meshes (ADR 057). Each tile is drawn by its
+	 * tags: ground (a column on authored maps, which have heights, ADR 065),
+	 * then a wall block, a fence, dead trees, stairs, a lift's plate or a bed;
+	 * walls stand on tile edges where the chunk says so (ADR 074). Void is
+	 * left out, so a building's floor floats in the dark.
 	 */
 	#buildChunk(chunk: Chunk, size: number, types: ReadonlyMap<number, TileType>): DrawnChunk {
 		const group = new Group();
-		let open = 0;
-		let beds = 0;
-		for (const id of chunk.tiles) {
-			const type = types.get(id);
-			if (!type?.blocks) open++;
-			if (type && !type.blocks && type.tags.includes(SLEEP_TAG)) beds++;
-		}
-		const walls = size * size - open;
-		const slab = new InstancedMesh(this.#box, this.#slabMat, 1);
-		slab.setMatrixAt(0, matrix(size / 2, -0.36, size / 2, size, 0.6, size));
-		const floor = new InstancedMesh(this.#box, this.#floorMat, Math.max(1, open));
-		const wall = new InstancedMesh(this.#box, this.#wallMat, Math.max(1, walls));
-		const cap = new InstancedMesh(this.#box, this.#capMat, Math.max(1, walls));
-		// A bed: a dark frame, a mattress in the tile's colour, a pillow at the north end.
-		const frame = new InstancedMesh(this.#box, this.#bedFrameMat, Math.max(1, beds));
-		const top = new InstancedMesh(this.#box, this.#bedTopMat, Math.max(1, beds));
-		const pillow = new InstancedMesh(this.#box, this.#pillowMat, Math.max(1, beds));
-		floor.count = open;
-		wall.count = walls;
-		cap.count = walls;
-		frame.count = top.count = pillow.count = beds;
-		let bi = 0;
+		const ground = new Batch();
+		const wall = new Batch();
+		const cap = new Batch();
+		const detail = new Batch();
+		const glow = new Batch();
 		const c = this.#colour;
-		let fi = 0;
-		let wi = 0;
+		const map = this.#game.map;
+		const indoors = !!map?.building;
+		const authored = chunk.heights !== null;
+		const tagsAt = (wx: number, wy: number): readonly string[] | null => {
+			const id = this.#tileAt(wx, wy);
+			return id === null ? null : (types.get(id)?.tags ?? []);
+		};
+		const edgeWall = (x: number, z: number, g: number, alongX: boolean) => {
+			const [sx, sz] = alongX ? [1 + THIN, THIN] : [THIN, 1 + THIN];
+			wall.add(shape(x, g + WALL_HEIGHT / 2, z, sx, WALL_HEIGHT, sz), EDGE_WALL);
+			cap.add(
+				shape(x, g + WALL_HEIGHT + CAP / 2, z, sx, CAP, sz),
+				c.set(EDGE_WALL).lerp(WHITE, 0.3)
+			);
+		};
+
 		for (let ly = 0; ly < size; ly++) {
 			for (let lx = 0; lx < size; lx++) {
-				const type = types.get(chunk.tiles[ly * size + lx]);
+				const i = ly * size + lx;
+				const type = types.get(chunk.tiles[i]);
+				const tags = type?.tags ?? [];
+				if (tags.includes('void')) continue;
 				const colour = type ? type.colour : UNKNOWN;
+				const wx = chunk.cx * size + lx;
+				const wy = chunk.cy * size + ly;
 				const x = lx + 0.5;
 				const z = ly + 0.5;
-				if (type?.blocks) {
-					wall.setMatrixAt(wi, matrix(x, WALL_HEIGHT / 2, z, 1, WALL_HEIGHT, 1));
-					wall.setColorAt(wi, c.set(colour));
-					cap.setMatrixAt(wi, matrix(x, WALL_HEIGHT + CAP / 2, z, 1, CAP, 1));
-					cap.setColorAt(wi, c.set(colour).lerp(WHITE, 0.35));
-					wi++;
+				const g = (chunk.heights?.[i] ?? 0) * LEVEL;
+				const water = tags.includes('water');
+				// The mockup's checker and slight variation, fixed per tile.
+				c.set(colour);
+				if (!water) c.multiplyScalar(((wx + wy) % 2 ? 1.0 : 1.12) * (0.95 + noise(wx, wy) * 0.08));
+				if (type?.tags.includes(SLEEP_TAG)) c.multiplyScalar(0.55); // so the bed stands out
+				const top = water ? g - 0.25 : g;
+				if (authored) {
+					ground.add(shape(x, (top + GROUND_BASE) / 2, z, 1, top - GROUND_BASE, 1), c);
 				} else {
-					const wx = chunk.cx * size + lx;
-					const wy = chunk.cy * size + ly;
-					floor.setMatrixAt(fi, matrix(x, -0.03, z, 0.98, 0.06, 0.98));
-					// The mockup's checker and slight variation, fixed per tile.
-					c.set(colour).multiplyScalar(
-						((wx + wy) % 2 ? 1.0 : 1.12) * (0.95 + tileNoise(wx, wy) * 0.08)
-					);
-					floor.setColorAt(fi, c);
-					fi++;
-					if (type?.tags.includes(SLEEP_TAG)) {
-						// The floor under a bed is darker, so the bed stands out.
-						floor.setColorAt(fi - 1, c.multiplyScalar(0.55));
-						frame.setMatrixAt(bi, matrix(x, 0.11, z, 0.86, 0.22, 0.94));
-						top.setMatrixAt(bi, matrix(x, 0.26, z + 0.1, 0.8, 0.08, 0.72));
-						top.setColorAt(bi, c.set(colour));
-						pillow.setMatrixAt(bi, matrix(x, 0.27, z - 0.34, 0.6, 0.07, 0.18));
-						bi++;
+					ground.add(shape(x, -0.03, z, 0.98, 0.06, 0.98), c);
+				}
+
+				if (type?.blocks && !tags.some((t) => SHAPED.includes(t))) {
+					// A wall block, cut down so you can see past it; a cliff stands taller.
+					const wh = tags.includes('edge') ? WALL_HEIGHT * 1.6 : WALL_HEIGHT;
+					wall.add(shape(x, g + wh / 2, z, 1, wh, 1), colour);
+					cap.add(shape(x, g + wh + CAP / 2, z, 1, CAP, 1), c.set(colour).lerp(WHITE, 0.35));
+				} else if (tags.includes('trees')) {
+					// Dead trees: bare trunks with a crooked branch or two.
+					for (let k = 0; k < 2; k++) {
+						const n = noise(wx, wy, k + 1);
+						const th = 1.4 + n * 1.4;
+						const tx = x - 0.25 + noise(wx, wy, k + 11) * 0.5;
+						const tz = z - 0.25 + noise(wx, wy, k + 21) * 0.5;
+						const trunk = c.set(0x2a2520).multiplyScalar(0.8 + n * 0.4);
+						detail.add(shape(tx, g + th / 2, tz, 0.12, th, 0.12, n * 3, (n - 0.5) * 0.15), trunk);
+						detail.add(shape(tx + 0.12, g + th * 0.7, tz, 0.05, th * 0.4, 0.05, n * 6, 0.7), trunk);
 					}
+				} else if (tags.includes('fence')) {
+					// Chain-link along the fence's line, with a post.
+					const east =
+						tagsAt(wx + 1, wy)?.includes('fence') || tagsAt(wx - 1, wy)?.includes('fence');
+					const [sx, sz] = east ? [1, 0.04] : [0.04, 1];
+					detail.add(shape(x, g + 0.75, z, sx, 1.5, sz), 0x3a3e42);
+					detail.add(shape(x, g + 0.8, z, 0.08, 1.6, 0.08), 0x24272a);
+				} else if (tags.includes('stairs')) {
+					for (let k = 0; k < 4; k++) {
+						const sh = (k + 1) * 0.12;
+						detail.add(
+							shape(x, g + sh / 2, z + 0.375 - k * 0.25, 0.9, sh, 0.25),
+							c.set(colour).multiplyScalar(1.2 + k * 0.08)
+						);
+					}
+				} else if (tags.includes('lift')) {
+					glow.add(shape(x, g + 0.005, z, 0.72, 0.01, 0.72), c.set(0x2f8f9a).multiplyScalar(0.55));
+				} else if (tags.includes('entrance') || tags.includes('exit')) {
+					glow.add(shape(x, g + 0.005, z, 0.8, 0.01, 0.8), c.set(0xb07a2a).multiplyScalar(0.45));
+				} else if (tags.includes(SLEEP_TAG)) {
+					// A bed: a dark frame, a mattress in the tile's colour, a pillow at the north end.
+					detail.add(shape(x, g + 0.11, z, 0.86, 0.22, 0.94), 0x4a3f36);
+					detail.add(shape(x, g + 0.26, z + 0.1, 0.8, 0.08, 0.72), colour);
+					detail.add(shape(x, g + 0.27, z - 0.34, 0.6, 0.07, 0.18), 0xd8d4cc);
+				}
+
+				// Thin walls on the east and south edges, unless a doorway; a
+				// building's floor is walled all round too, but for its way out.
+				const e = chunk.edges?.[i] ?? 0;
+				const wallE = (e & EDGE_WALL_EAST) !== 0 && (e & EDGE_DOOR_EAST) === 0;
+				const wallS = (e & EDGE_WALL_SOUTH) !== 0 && (e & EDGE_DOOR_SOUTH) === 0;
+				if (wallE) edgeWall(x + 0.5, z, g, false);
+				if (wallS) edgeWall(x, z + 0.5, g, true);
+				if (indoors && map) {
+					const out = tags.includes('exit');
+					if (wx === 0) edgeWall(x - 0.5, z, g, false);
+					if (wy === 0) edgeWall(x, z - 0.5, g, true);
+					if (wx === map.width - 1 && !wallE && !out) edgeWall(x + 0.5, z, g, false);
+					if (wy === map.height - 1 && !wallS && !out) edgeWall(x, z + 0.5, g, true);
 				}
 			}
 		}
-		const meshes = [slab, floor, wall, cap, frame, top, pillow];
-		for (const m of meshes) {
-			if (m.instanceColor) m.instanceColor.needsUpdate = true;
-			if (m.count > 0) group.add(m);
+
+		const meshes: InstancedMesh[] = [];
+		if (!authored) {
+			const slab = new InstancedMesh(this.#box, this.#slabMat, 1);
+			slab.setMatrixAt(0, shape(size / 2, -0.36, size / 2, size, 0.6, size));
+			meshes.push(slab);
 		}
+		for (const [batch, mat] of [
+			[ground, this.#floorMat],
+			[wall, this.#wallMat],
+			[cap, this.#capMat],
+			[detail, this.#detailMat],
+			[glow, this.#glowMat]
+		] as const) {
+			const mesh = batch.build(this.#box, mat);
+			if (mesh) meshes.push(mesh);
+		}
+		for (const m of meshes) group.add(m);
 		return { group, version: chunk.version, meshes };
+	}
+
+	/** The tile id at a map tile, if its chunk is here. */
+	#tileAt(x: number, y: number): number | null {
+		const chunk = this.#chunkAt(x, y);
+		if (!chunk) return null;
+		const size = this.#game.map?.chunkSize ?? 32;
+		return chunk.tiles[(y - chunk.cy * size) * size + (x - chunk.cx * size)];
+	}
+
+	/** The ground's height level at a map tile (ADR 065), or null if its chunk is not here. */
+	#levelAt(x: number, y: number): number | null {
+		const chunk = this.#chunkAt(x, y);
+		if (!chunk) return null;
+		if (!chunk.heights) return 0;
+		const size = this.#game.map?.chunkSize ?? 32;
+		return chunk.heights[(y - chunk.cy * size) * size + (x - chunk.cx * size)];
+	}
+
+	/** The height of the ground's top at a map tile, 0 where it is unknown. */
+	#groundAt(x: number, y: number): number {
+		return (this.#levelAt(x, y) ?? 0) * LEVEL;
+	}
+
+	#chunkAt(x: number, y: number): Chunk | undefined {
+		const size = this.#game.map?.chunkSize ?? 32;
+		const w = this.#wrapWidth();
+		if (w) x = ((x % w) + w) % w;
+		return this.#game.chunks.get(chunkKey(Math.floor(x / size), Math.floor(y / size)));
+	}
+
+	/**
+	 * On a new map (stairs, a lift, a door; ADR 074) drops everything drawn
+	 * for the old one and sets the zoom for the new.
+	 */
+	#checkMap(): void {
+		const map = this.#game.map;
+		const address = map?.ref?.address;
+		if (address === this.#mapAddress) return;
+		this.#mapAddress = address;
+		this.#clearMap();
+		this.#originSet = false;
+		this.#camGround = 0;
+		this.#zoom = map?.building ? FLOOR_ZOOM : 1;
+		const { width, height, bufferHeight } = this.#size;
+		this.resize(width, height, bufferHeight);
+		this.#mapChanged(map);
+	}
+
+	/** Lighting and the like for a new map; see the dark dressing. */
+	#mapChanged(map: MapInfo | null): void {
+		void map;
+	}
+
+	#clearMap(): void {
+		for (const c of this.#chunks.values()) this.#disposeChunk(c);
+		this.#chunks.clear();
+		this.#disposeProps();
+	}
+
+	/**
+	 * Builds the map's props whose ground has arrived (ADR 074), again
+	 * whenever chunks come or go; a prop is placed on the ground under its
+	 * north-west tile.
+	 */
+	#drawProps(): void {
+		if (this.#propsDirty) {
+			this.#propsDirty = false;
+			this.#disposeProps();
+			const props = this.#game.map?.props ?? [];
+			if (props.length > 0) this.#props = this.#buildProps(props);
+		}
+		this.#props?.group.position.set(-this.#ox, 0, -this.#oy);
+	}
+
+	#buildProps(props: MapInfo['props']): DrawnProps {
+		const b = propBatches();
+		const labels: PropLabel[] = [];
+		const lamps: Lamp[] = [];
+		for (const p of props) {
+			const level = this.#levelAt(p.x, p.y);
+			if (level === null) continue;
+			const lamp = addProp(b, p, level * LEVEL, labels);
+			if (lamp) lamps.push(lamp);
+		}
+		const group = new Group();
+		const meshes: InstancedMesh[] = [];
+		for (const [batch, geo, mat] of [
+			[b.box, this.#box, this.#detailMat],
+			[b.cylinder, this.#cylinder, this.#detailMat],
+			[b.glowBox, this.#box, this.#glowMat],
+			[b.glowCylinder, this.#cylinder, this.#glowMat]
+		] as const) {
+			const mesh = batch.build(geo, mat);
+			if (mesh) meshes.push(mesh);
+		}
+		for (const m of meshes) group.add(m);
+		this.scene.add(group);
+		const drawn: Label[] = labels.map((l) => {
+			const at = new Vector3();
+			const variant =
+				l.kind === 'hydra-facility' ? 'cyan' : l.kind === 'exchange' ? 'amber' : 'quiet';
+			return makeLabel(
+				this.#layer,
+				l.text,
+				variant,
+				() => at.set(l.x - this.#ox, l.y, l.z - this.#oy),
+				6
+			);
+		});
+		this.labels.push(...drawn);
+		return { group, meshes, labels: drawn, lamps };
+	}
+
+	#disposeProps(): void {
+		const p = this.#props;
+		if (!p) return;
+		this.#props = null;
+		p.group.removeFromParent();
+		for (const m of p.meshes) m.dispose();
+		for (const l of p.labels) {
+			l.el.remove();
+			const i = this.labels.indexOf(l);
+			if (i >= 0) this.labels.splice(i, 1);
+		}
 	}
 
 	#disposeChunk(drawn: DrawnChunk): void {
@@ -504,7 +736,14 @@ export class TileView implements View {
 			}
 			this.#pose(f, c);
 			const [gx, gy] = glidePosition(c, tickNow, this.#wrapWidth());
-			this.#place(f.root, gx, gy, 0);
+			// Up or down a level as you step (ADR 065), eased; a jump of more
+			// than a level, as on another map, is not.
+			const ground = this.#groundAt(Math.round(gx), Math.round(gy));
+			f.ground =
+				Number.isNaN(f.ground) || Math.abs(ground - f.ground) > 1.5 * LEVEL
+					? ground
+					: f.ground + (ground - f.ground) * Math.min(1, dt * 10);
+			this.#place(f.root, gx, gy, f.ground);
 			// Face the way you are stepping, turning smoothly.
 			const s = c.step;
 			const walking = !!s && tickNow < s.arriveTick && f.drawn?.lying === 'no';
@@ -531,7 +770,7 @@ export class TileView implements View {
 			const lying = f.drawn?.lying;
 			f.head.set(
 				f.root.position.x,
-				lying === 'no' ? 1.05 : lying === 'asleep' ? 0.75 : 0.55,
+				f.ground + (lying === 'no' ? 1.05 : lying === 'asleep' ? 0.75 : 0.55),
 				f.root.position.z
 			);
 			if (f.bubble.hidden !== nowMs >= f.bubbleUntil) f.bubble.hidden = nowMs >= f.bubbleUntil;
@@ -580,6 +819,22 @@ export class TileView implements View {
 		const pack = new Mesh(this.#packGeo, this.#packMat);
 		pack.position.set(0, 0.36, -0.2);
 		pose.add(body, head, visor, pack);
+		// Seen through walls and buildings in front of it, faintly, so a
+		// building between you and the camera never loses you (ADR 074).
+		const xrayMat = new MeshBasicMaterial({
+			color: COLOURS[c.id % COLOURS.length],
+			transparent: true,
+			opacity: 0.35,
+			// Only where something nearer the camera hides it.
+			depthFunc: GreaterDepth,
+			depthWrite: false
+		});
+		for (const part of [body, head]) {
+			const ghost = new Mesh(part.geometry, xrayMat);
+			ghost.position.copy(part.position);
+			ghost.renderOrder = 10;
+			pose.add(ghost);
+		}
 		this.scene.add(root);
 
 		// The name, with any speech bubble stacked above it, as one HTML label.
@@ -608,6 +863,7 @@ export class TileView implements View {
 			body,
 			bodyMat,
 			headMat,
+			xrayMat,
 			zs: [],
 			ring: null,
 			label,
@@ -619,7 +875,8 @@ export class TileView implements View {
 			progressFill,
 			progressShown: -1,
 			drawn: null,
-			head: headPos
+			head: headPos,
+			ground: NaN
 		};
 	}
 
@@ -685,6 +942,7 @@ export class TileView implements View {
 		f.root.removeFromParent();
 		f.bodyMat.dispose();
 		f.headMat.dispose();
+		f.xrayMat.dispose();
 		for (const z of f.zs) z.material.dispose();
 		f.who.remove();
 		const i = this.labels.indexOf(f.label);
@@ -724,7 +982,9 @@ export class TileView implements View {
 				const loop = this.#aimTiles[i++];
 				loop.visible = true;
 				loop.material = aim.dir !== null && dx === ax && dy === ay ? this.#aimMat : this.#aimDimMat;
-				this.#place(loop, Math.round(mx) + dx, Math.round(my) + dy, 0.04);
+				const ax2 = Math.round(mx) + dx;
+				const ay2 = Math.round(my) + dy;
+				this.#place(loop, ax2, ay2, this.#groundAt(ax2, ay2) + 0.04);
 			}
 		}
 	}
@@ -736,7 +996,7 @@ export class TileView implements View {
 		this.#queued.visible = !!(me?.step && dir !== null);
 		if (!me?.step || dir === null) return;
 		const [x, y] = queuedTarget(me.step.toX, me.step.toY, dir);
-		this.#place(this.#queued, x, y, 0.03);
+		this.#place(this.#queued, x, y, this.#groundAt(x, y) + 0.03);
 	}
 
 	/** The tile under a point, in map coordinates, or null off the map. */
@@ -759,9 +1019,3 @@ const SNAP_RIGHT = new Vector3();
 const SNAP_UP = new Vector3();
 const SNAP_ABS = new Vector3();
 const SNAP_ORIGIN = new Vector3();
-const m4 = new Matrix4();
-
-/** An instance matrix: position and scale, no rotation. */
-function matrix(x: number, y: number, z: number, sx: number, sy: number, sz: number): Matrix4 {
-	return m4.makeScale(sx, sy, sz).setPosition(x, y, z);
-}

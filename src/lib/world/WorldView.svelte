@@ -76,6 +76,12 @@
 
 <div class="world">
 	<EngineHost {pixelSize} {setup} />
+	{#key game.mapChanges}
+		<!-- Taking stairs, a lift or a door fades in the new map (ADR 074). -->
+		{#if game.mapChanges > 0}
+			<div class="map-fade" aria-hidden="true"></div>
+		{/if}
+	{/key}
 	<section class="view card">
 		<PixelSizeButtons value={pixelSize} onchange={setPixelSize} />
 		<p class="keys">
@@ -91,6 +97,23 @@
 		inset: 0;
 		overflow: hidden;
 		background: #05070d;
+	}
+
+	.map-fade {
+		position: absolute;
+		inset: 0;
+		background: #05070d;
+		pointer-events: none;
+		animation: map-fade 0.7s ease-out forwards;
+	}
+
+	@keyframes map-fade {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
 	}
 
 	.card {
