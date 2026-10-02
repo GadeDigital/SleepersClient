@@ -1,16 +1,19 @@
 import {
+	AdditiveBlending,
 	AmbientLight,
 	BoxGeometry,
 	BufferGeometry,
 	Color,
 	CylinderGeometry,
 	DirectionalLight,
+	Fog,
 	GreaterDepth,
 	Group,
 	InstancedMesh,
 	LineBasicMaterial,
 	LineLoop,
 	PlaneGeometry,
+	PointLight,
 	Mesh,
 	MeshBasicMaterial,
 	MeshLambertMaterial,
@@ -51,7 +54,7 @@ import { glidePosition } from '$lib/world/glide';
 import { queuedTarget } from '$lib/world/move-input';
 import { wrapDelta } from '$lib/world/wrap';
 import { makeLabel, type Label } from '../labels';
-import { zTexture } from '../textures';
+import { glowTexture, zTexture } from '../textures';
 import { Batch, noise, shape } from './batch';
 import { addProp, LEVEL, propBatches, type Lamp, type PropLabel } from './props';
 import type { View } from './View';
@@ -102,6 +105,13 @@ const AIM_COLOURS: Partial<Record<ActionKind, number>> = {
 const SLEEP_TAG = 'sleep';
 /** A sleeper lies on the bed's mattress. */
 const ON_BED = 0.38;
+
+/** The few real lights that follow the camera to the nearest lamps (C2). */
+const LAMP_LIGHTS = 6;
+/** Fog, in distance from the camera: the dark closes in past the near streets. */
+const FOG_NEAR = 40;
+const FOG_FAR = 72;
+const NIGHT = 0x05070d;
 
 /** Blocking tiles drawn as ground plus their own shape, not as a wall block. */
 const SHAPED = ['water', 'solid', 'fixture', 'pod', 'fence', 'trees'];
@@ -229,17 +239,36 @@ export class TileView implements View {
 	readonly #ndc = new Vector2();
 	readonly #colour = new Color();
 	readonly #target = new Vector3();
+	readonly #ambient = new AmbientLight(0x8a98bd, 0.62 * LIGHT);
+	readonly #sun = new DirectionalLight(0xffffff, 0.7 * LIGHT);
+	readonly #fill = new DirectionalLight(0x6f8fd0, 0.25 * LIGHT);
+	readonly #lampLights: PointLight[] = [];
+	#outdoors = true;
+	readonly #glowTex: Texture = glowTexture();
+	readonly #poolMat = new MeshBasicMaterial({
+		color: 0xffffff,
+		map: this.#glowTex,
+		transparent: true,
+		blending: AdditiveBlending,
+		depthWrite: false,
+		polygonOffset: true,
+		polygonOffsetFactor: -2
+	});
 
 	constructor(game: GameState, labelLayer: HTMLElement) {
 		this.#game = game;
 		this.#layer = labelLayer;
-		this.scene.add(new AmbientLight(0x8a98bd, 0.62 * LIGHT));
-		const sun = new DirectionalLight(0xffffff, 0.7 * LIGHT);
-		sun.position.set(-8, 20, 10);
-		this.scene.add(sun, sun.target);
-		const fill = new DirectionalLight(0x6f8fd0, 0.25 * LIGHT);
-		fill.position.set(10, 6, -12);
-		this.scene.add(fill, fill.target);
+		this.scene.add(this.#ambient);
+		this.#sun.position.set(-8, 20, 10);
+		this.scene.add(this.#sun, this.#sun.target);
+		this.#fill.position.set(10, 6, -12);
+		this.scene.add(this.#fill, this.#fill.target);
+		for (let i = 0; i < LAMP_LIGHTS; i++) {
+			const light = new PointLight(0xffffff, 0, 9, 1.2);
+			this.#lampLights.push(light);
+			this.scene.add(light);
+		}
+		this.#mapChanged(null);
 
 		const square = () =>
 			new BufferGeometry().setFromPoints([
@@ -375,10 +404,12 @@ export class TileView implements View {
 			this.#aimDimMat,
 			this.#aimMat,
 			this.#detailMat,
-			this.#glowMat
+			this.#glowMat,
+			this.#poolMat
 		])
 			m.dispose();
 		this.#zTex.dispose();
+		this.#glowTex.dispose();
 	}
 
 	/** The map's width if it wraps east to west (ADR 031), else undefined. */
@@ -543,6 +574,24 @@ export class TileView implements View {
 					glow.add(shape(x, g + 0.005, z, 0.72, 0.01, 0.72), c.set(0x2f8f9a).multiplyScalar(0.55));
 				} else if (tags.includes('entrance') || tags.includes('exit')) {
 					glow.add(shape(x, g + 0.005, z, 0.8, 0.01, 0.8), c.set(0xb07a2a).multiplyScalar(0.45));
+				} else if (type?.name === 'rubble') {
+					// Wear: broken concrete lying about.
+					for (let k = 0; k < 3; k++) {
+						const n = noise(wx, wy, k + 31);
+						const r = 0.1 + n * 0.16;
+						detail.add(
+							shape(
+								x - 0.3 + noise(wx, wy, k + 41) * 0.6,
+								g + r / 2,
+								z - 0.3 + noise(wx, wy, k + 51) * 0.6,
+								r * 1.6,
+								r,
+								r,
+								n * 6
+							),
+							c.set(0x4a453e).multiplyScalar(0.7 + n * 0.5)
+						);
+					}
 				} else if (tags.includes(SLEEP_TAG)) {
 					// A bed: a dark frame, a mattress in the tile's colour, a pillow at the north end.
 					detail.add(shape(x, g + 0.11, z, 0.86, 0.22, 0.94), 0x4a3f36);
@@ -634,9 +683,47 @@ export class TileView implements View {
 		this.#mapChanged(map);
 	}
 
-	/** Lighting and the like for a new map; see the dark dressing. */
+	/**
+	 * The dark dressing (game design, sixth pillar): outdoors it is night,
+	 * a cold moon, fog past the near streets, and light only where lamps
+	 * stand; indoors, flat tired strip lights.
+	 */
 	#mapChanged(map: MapInfo | null): void {
-		void map;
+		this.#outdoors = !map?.building;
+		if (this.#outdoors) {
+			this.#ambient.color.set(0x3a4766);
+			this.#ambient.intensity = 0.5 * LIGHT;
+			this.#sun.color.set(0x8fa6d8);
+			this.#sun.intensity = 0.32 * LIGHT;
+			this.#fill.color.set(0x24345a);
+			this.#fill.intensity = 0.15 * LIGHT;
+			this.scene.fog = new Fog(NIGHT, FOG_NEAR, FOG_FAR);
+		} else {
+			this.#ambient.color.set(0x8a94a8);
+			this.#ambient.intensity = 0.55 * LIGHT;
+			this.#sun.color.set(0xe4ecf0);
+			this.#sun.intensity = 0.5 * LIGHT;
+			this.#fill.color.set(0x5a6f90);
+			this.#fill.intensity = 0.2 * LIGHT;
+			this.scene.fog = null;
+		}
+		for (const l of this.#lampLights) l.intensity = 0;
+	}
+
+	/** Puts the real lights on the lamps nearest the camera's target. */
+	#lightLamps(): void {
+		const lamps = this.#outdoors ? (this.#props?.lamps ?? []) : [];
+		const near = lamps
+			.map((l) => ({ l, d: (l.x - this.#camX) ** 2 + (l.z - this.#camY) ** 2 }))
+			.sort((a, b) => a.d - b.d);
+		this.#lampLights.forEach((light, i) => {
+			const lamp = near[i]?.l;
+			light.intensity = lamp ? 2.2 * LIGHT : 0;
+			if (lamp) {
+				light.color.set(lamp.colour);
+				light.position.set(lamp.x - this.#ox, lamp.y, lamp.z - this.#oy);
+			}
+		});
 	}
 
 	#clearMap(): void {
@@ -658,6 +745,7 @@ export class TileView implements View {
 			if (props.length > 0) this.#props = this.#buildProps(props);
 		}
 		this.#props?.group.position.set(-this.#ox, 0, -this.#oy);
+		this.#lightLamps();
 	}
 
 	#buildProps(props: MapInfo['props']): DrawnProps {
@@ -676,7 +764,8 @@ export class TileView implements View {
 			[b.box, this.#box, this.#detailMat],
 			[b.cylinder, this.#cylinder, this.#detailMat],
 			[b.glowBox, this.#box, this.#glowMat],
-			[b.glowCylinder, this.#cylinder, this.#glowMat]
+			[b.glowCylinder, this.#cylinder, this.#glowMat],
+			[b.pool, this.#plane, this.#poolMat]
 		] as const) {
 			const mesh = batch.build(geo, mat);
 			if (mesh) meshes.push(mesh);

@@ -135,6 +135,8 @@ export function addProp(b: PropBatches, p: Prop, g: number, labels: PropLabel[])
 			b.cylinder.add(shape(lx, g + 1.2, lz, 0.1, 2.4, 0.1), 0x1c1e22);
 			b.glowBox.add(shape(lx, g + 2.42, lz, 0.28, 0.1, 0.28), colour);
 			lamp = { x: lx, y: g + 2.3, z: lz, colour };
+			// Its pool of light on the ground: the only way to see far at night.
+			b.pool.add(shape(lx, g + 0.02, lz, 7, 1, 7), c.set(colour).multiplyScalar(0.45));
 			top = g + 2.5;
 			break;
 		}
