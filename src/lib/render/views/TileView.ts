@@ -141,7 +141,7 @@ interface Figure {
 	body: Mesh;
 	bodyMat: MeshLambertMaterial;
 	headMat: MeshLambertMaterial;
-	/** A faint silhouette drawn over scenery that hides the figure. */
+	/** A faint silhouette over scenery that hides the figure; yours only. */
 	xrayMat: MeshBasicMaterial;
 	zs: Sprite[];
 	ring: Mesh | null;
@@ -966,9 +966,11 @@ export class TileView implements View {
 		const pack = new Mesh(this.#packGeo, this.#packMat);
 		pack.position.set(0, 0.36, -0.2);
 		pose.add(body, head, visor, pack);
-		// Seen through walls and buildings in front of it, faintly, so a
-		// building between you and the camera never loses you (ADR 074).
+		// Your own figure is seen through walls and buildings in front of it,
+		// faintly, so a building between you and the camera never loses you
+		// (ADR 074). Everyone else stays hidden behind them: shown in #pose.
 		const xrayMat = new MeshBasicMaterial({
+			visible: false,
 			color: COLOURS[c.id % COLOURS.length],
 			transparent: true,
 			opacity: 0.35,
@@ -1041,6 +1043,7 @@ export class TileView implements View {
 			m.depthWrite = !ghost;
 		}
 		f.who.classList.toggle('ghost', ghost);
+		f.xrayMat.visible = isYou;
 		// Sleepers lie on their back; the unconscious lie on their side,
 		// dimmed, so the two are easy to tell apart.
 		f.pose.rotation.set(0, 0, 0);
