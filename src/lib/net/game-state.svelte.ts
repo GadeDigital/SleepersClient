@@ -150,6 +150,8 @@ export class GameState {
 	log = $state.raw<ChatEntry[]>([]);
 	/** The latest transmission, shown in the world while it lasts. */
 	transmission = $state.raw<TransmissionView | null>(null);
+	/** Whether to offer the development tools: you are an admin (ADR 077). */
+	devTools = $state(false);
 	/** Whether you are an admin's ghost (ADR 073). */
 	ghost = $state(false);
 	/** The floor a lift is taking you to; null when not riding (ADR 074). */
@@ -193,6 +195,7 @@ export class GameState {
 				this.tileTypes = new Map(m.value.tileTypes.map((t) => [t.id, t]));
 				this.chunks.clear();
 				this.myId = m.value.yourCharacterId;
+				this.devTools = m.value.devTools;
 				const characters: Record<number, CharacterView> = {};
 				for (const c of m.value.characters) characters[c.id] = view(c);
 				this.characters = characters;

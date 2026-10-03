@@ -2,8 +2,9 @@
 	import type { Attachment } from 'svelte/attachments';
 	import type { GameState } from '$lib/net/game-state.svelte';
 
-	// DEVELOPMENT ONLY: the planet overview and teleport, for testing
-	// generation and streaming. The server refuses both without -dev-tools.
+	// The development tools: the map overview and teleport, for admins only
+	// (ADR 077). The snapshot says whether to offer them; the server checks
+	// the role again on every request.
 
 	interface Props {
 		game: GameState;
@@ -36,14 +37,15 @@
 	}
 
 	function onkeydown(event: KeyboardEvent) {
-		if (event.key !== 'F2' || event.target instanceof HTMLInputElement) return;
+		// For anyone but an admin, F2 does nothing at all (ADR 077).
+		if (event.key !== 'F2' || event.target instanceof HTMLInputElement || !game.devTools) return;
 		event.preventDefault();
 		toggle();
 	}
 
 	// The overview is of the map you are on; after stairs or a lift, ask again.
 	$effect(() => {
-		if (open && !game.overview) onoverview();
+		if (open && game.devTools && !game.overview) onoverview();
 	});
 
 	/** Paints the overview whenever it or the tile colours change. */
@@ -79,7 +81,7 @@
 
 <svelte:window {onkeydown} />
 
-{#if open}
+{#if open && game.devTools}
 	<section class="debug" aria-label="Development tools">
 		<header>
 			<strong>DEVELOPMENT ONLY</strong>

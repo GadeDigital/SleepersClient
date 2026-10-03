@@ -45,6 +45,21 @@ describe('GameState', () => {
 		expect(game.clock.now(0)).toBe(30);
 	});
 
+	it('offers the development tools only when the snapshot says so (ADR 077)', () => {
+		const game = joined();
+		expect(game.devTools).toBe(false);
+		game.apply(
+			msg({
+				message: {
+					case: 'worldSnapshot',
+					value: { yourCharacterId: 1, map: { ref: { address: 'g/test' } }, devTools: true }
+				}
+			}),
+			0
+		);
+		expect(game.devTools).toBe(true);
+	});
+
 	it('records a step, then moves on CharacterMoved', () => {
 		const game = joined();
 		game.pendingMove = Direction.EAST;
